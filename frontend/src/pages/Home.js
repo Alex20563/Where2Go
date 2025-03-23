@@ -6,7 +6,7 @@ import "../styles/Home.css";
 
 function Home() {
     return (
-        <div className="container d-flex flex-column align-items-center justify-content-center min-vh-100 text-center text-white home-bg">
+        <div className="container d-flex flex-column align-items-center justify-content-center min-vh-100 text-center text-white home-container">
             <img src={logo} alt="Where2Go Logo" className="mb-4" style={{ width: "300px" }} />
             <p className="lead">Cпонтанность, организованная с умом</p>
 

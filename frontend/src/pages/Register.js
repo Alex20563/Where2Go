@@ -1,51 +1,46 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/Login.css"; // Используем те же стили
 
 function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-
-    const response = await fetch("http://localhost:5000/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      alert("Регистрация успешна! Теперь войдите.");
-      navigate("/login"); // Перенаправление на вход
-    } else {
-      alert("Ошибка: " + data.message);
-    }
-  };
-
   return (
-    <div>
-      <h2>Регистрация</h2>
-      <form onSubmit={handleRegister}>
-        <input
-          type="email"
-          placeholder="Введите email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Введите пароль"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Зарегистрироваться</button>
-      </form>
-    </div>
+      <div className="login-container d-flex align-items-center justify-content-center">
+        <div className="login-box p-5 rounded shadow">
+          <h2 className="text-center mb-4 text-primary">Регистрация</h2>
+
+          <form>
+            <div className="mb-3">
+              <label className="form-label">Имя</label>
+              <input type="text" className="form-control" placeholder="Введите имя" />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Email</label>
+              <input type="email" className="form-control" placeholder="Введите email" />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Пароль</label>
+              <input type="password" className="form-control" placeholder="Введите пароль" />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Повторите пароль</label>
+              <input type="password" className="form-control" placeholder="Повторите пароль" />
+            </div>
+
+            <button type="submit" className="btn btn-primary w-100">
+              Зарегистрироваться
+            </button>
+          </form>
+
+          <div className="text-center mt-3">
+            <p>
+              Уже есть аккаунт? <Link to="/login" className="text-decoration-none">Войти</Link>
+            </p>
+          </div>
+        </div>
+      </div>
   );
 }
 
