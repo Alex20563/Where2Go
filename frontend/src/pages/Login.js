@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Login.css";
 import React, {useState} from "react";
@@ -9,6 +9,8 @@ function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const navigate = useNavigate();
+
 
     // Заглушка для проверки логина и пароля
     const mockUsers = [
@@ -55,8 +57,8 @@ function Login() {
         }
 
         setSuccess("Вход успешен!");
+        setTimeout(() => navigate("/2fa"), 1500);
         console.log("Пользователь вошел:", { email });
-
     };
 
   return (

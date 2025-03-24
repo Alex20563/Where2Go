@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Login.css";
 import React, {useState} from "react";
@@ -11,6 +11,7 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   // Валидация email
   const validateEmail = (email) => {
@@ -65,6 +66,7 @@ function Register() {
       // TODO: отправить на сервер
       console.log("Отправка данных на сервер...", { username, email, password });
       setSuccess("Вы успешно зарегистрированы!");
+      setTimeout(() => navigate("/2fa"), 1500);
     } catch (err) {
       setError("Ошибка при регистрации. Попробуйте снова.");
     }
