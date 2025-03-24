@@ -1,32 +1,122 @@
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles/Login.css"; // Используем те же стили
+import "../styles/Login.css";
+import React, {useState} from "react";
+import {Alert} from "react-bootstrap"; // Используем те же стили
 
 function Register() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Валидация email
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Валидация пароля
+  const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+    return passwordRegex.test(password);
+  };
+
+  // Проверка уникальности имени
+  const checkUsernameUnique = (username) => {
+    // TODO: запрос к серверу
+    const existingUsers = ["user1", "test", "admin"];
+    return !existingUsers.includes(username);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!username || !email || !password || !confirmPassword) {
+      setError("Заполните все поля.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Введите корректный email.");
+      return;
+    }
+
+    if (!checkUsernameUnique(username)) {
+      setError("Имя пользователя уже занято.");
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      setError("Пароль должен содержать не менее 6 символов, включая цифры и заглавные и строчные буквы.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Пароли не совпадают.");
+      return;
+    }
+
+    try {
+      // TODO: отправить на сервер
+      console.log("Отправка данных на сервер...", { username, email, password });
+      setSuccess("Вы успешно зарегистрированы!");
+    } catch (err) {
+      setError("Ошибка при регистрации. Попробуйте снова.");
+    }
+  };
+
   return (
       <div className="login-container d-flex align-items-center justify-content-center">
         <div className="login-box p-5 rounded shadow">
           <h2 className="text-center mb-4 text-primary">Регистрация</h2>
+          {error && <Alert variant="danger">{error}</Alert>}
+          {success && <Alert variant="success">{success}</Alert>}
 
-          <form>
+          <form onSubmit={handleSubmit} >
             <div className="mb-3">
-              <label className="form-label">Имя</label>
-              <input type="text" className="form-control" placeholder="Введите имя" />
+              <label className="form-label">Имя пользователя</label>
+              <input type="text"
+                     className="form-control"
+                     placeholder="Введите имя пользователя"
+                     value={username}
+                     onChange={(e) => setUsername(e.target.value)}
+              />
             </div>
 
             <div className="mb-3">
               <label className="form-label">Email</label>
-              <input type="email" className="form-control" placeholder="Введите email" />
+              <input type="email"
+                     className="form-control"
+                     placeholder="Введите email"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
 
             <div className="mb-3">
               <label className="form-label">Пароль</label>
-              <input type="password" className="form-control" placeholder="Введите пароль" />
+              <input type="password"
+                     className="form-control"
+                     placeholder="Введите пароль"
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
+              />
+
             </div>
 
             <div className="mb-3">
               <label className="form-label">Повторите пароль</label>
-              <input type="password" className="form-control" placeholder="Повторите пароль" />
+              <input type="password"
+                     className="form-control"
+                     placeholder="Повторите пароль"
+                     value={confirmPassword}
+                     onChange={(e) => setConfirmPassword(e.target.value)}
+              />
             </div>
 
             <button type="submit" className="btn btn-primary w-100">
