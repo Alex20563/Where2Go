@@ -17,14 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 from django.views.generic import TemplateView
-from Where2go.views import UserCreate, LoginView, Generate2FASecretView, Verify2FAView
+from Where2go.views import UserCreate, LoginView, Generate2FASecretView, UpdateUserView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/register/', UserCreate.as_view(), name='user-register'),
     path('api/login/', LoginView.as_view(), name='login'),
     path('api/generate-2fa-secret/', Generate2FASecretView.as_view(), name='generate-2fa-secret'),
-    path('api/verify-2fa/', Verify2FAView.as_view(), name='verify-2fa'),
+    path('api/update-user/', UpdateUserView.as_view(), name='update-user'),
     # Обслуживание Vue.js приложения
     re_path(r'^$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^(?!api/).*$', TemplateView.as_view(template_name='index.html')),

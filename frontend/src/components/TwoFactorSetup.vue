@@ -2,20 +2,17 @@
   <div class="two-factor-setup">
     <div v-if="!isEnabled" class="setup-section">
       <h2>Настройка двухфакторной аутентификации</h2>
-      <button @click="setupTwoFactor">Включить 2FA</button>
+      <button @click="setupTwoFactor">Отправить код на почту</button>
     </div>
     
-    <div v-if="showQRCode" class="qr-section">
-      <h3>Отсканируйте QR-код</h3>
-      <div v-html="qrCodeImage"></div>
-      <div class="verification">
-        <input 
-          v-model="verificationCode" 
-          type="text" 
-          placeholder="Введите код подтверждения"
-        />
-        <button @click="verifyCode">Подтвердить</button>
-      </div>
+    <div v-if="showVerification" class="verification-section">
+      <h3>Введите код из электронной почты</h3>
+      <input 
+        v-model="verificationCode" 
+        type="text" 
+        placeholder="Введите код подтверждения"
+      />
+      <button @click="verifyCode">Подтвердить</button>
     </div>
   </div>
 </template>
@@ -28,19 +25,15 @@ export default {
   data() {
     return {
       isEnabled: false,
-      showQRCode: false,
-      qrCodeImage: '',
-      verificationCode: '',
-      secret: ''
+      showVerification: false,
+      verificationCode: ''
     }
   },
   methods: {
     async setupTwoFactor() {
       try {
-        const response = await api.generate2FASecret()
-        this.secret = response.data.secret
-        this.showQRCode = true
-        this.qrCodeImage = `https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=otpauth://totp/Where2Go:${this.$store.state.username}?secret=${this.secret}&issuer=Where2Go`
+        await api.generate2FASecret()
+        this.showVerification = true
       } catch (error) {
         console.error('Error setting up 2FA:', error)
       }
@@ -51,7 +44,7 @@ export default {
         const response = await api.verify2FA(this.verificationCode)
         if (response.data.message === '2FA verification successful') {
           this.isEnabled = true
-          this.showQRCode = false
+          this.showVerification = false
           this.$emit('2fa-enabled')
         }
       } catch (error) {

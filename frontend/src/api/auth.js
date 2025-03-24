@@ -2,17 +2,26 @@ import axios from 'axios'
 
 const API_URL = 'http://localhost:8000/api'
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token')  // Получаем токен из localStorage
+  return {
+    headers: {
+      Authorization: `Token ${token}`  // Добавляем токен в заголовок
+    }
+  }
+}
+
 export default {
-  login(credentials) {
+  async login(credentials) {
     return axios.post(`${API_URL}/login/`, credentials)
   },
   register(userData) {
     return axios.post(`${API_URL}/register/`, userData)
   },
   generate2FASecret() {
-    return axios.post(`${API_URL}/generate-2fa-secret/`)
+    return axios.post(`${API_URL}/generate-2fa-secret/`, {}, getAuthHeaders())  // Добавляем заголовки
   },
-  verify2FA(token) {
-    return axios.post(`${API_URL}/verify-2fa/`, { token })
+  updateUser(data) {
+    return axios.post(`${API_URL}/update-user/`, data, getAuthHeaders())  // Добавляем заголовки
   }
 }

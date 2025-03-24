@@ -9,21 +9,33 @@
     <div v-else class="auth-container">
       <div class="auth-buttons" v-if="!showRegister">
         <h2>Вход</h2>
-        <form @submit.prevent="login">
+        <form @submit.prevent="handleLogin">
           <input 
             v-model="loginForm.username" 
             type="text" 
             placeholder="Имя пользователя"
             required
-          >
+          />
           <input 
             v-model="loginForm.password" 
             type="password" 
             placeholder="Пароль"
             required
-          >
+          />
           <button type="submit">Войти</button>
         </form>
+
+        <div v-if="showVerification">
+          <h3>Введите код 2FA</h3>
+          <input 
+            v-model="loginForm.verificationCode" 
+            type="text" 
+            placeholder="Код 2FA"
+            required
+          />
+          <button @click="verifyCode">Подтвердить код</button>
+        </div>
+
         <p>
           Нет аккаунта? 
           <a href="#" @click.prevent="showRegister = true">Зарегистрироваться</a>
@@ -38,19 +50,19 @@
             type="text" 
             placeholder="Имя пользователя"
             required
-          >
+          />
           <input 
             v-model="registerForm.email" 
             type="email" 
             placeholder="Email"
             required
-          >
+          />
           <input 
             v-model="registerForm.password" 
             type="password" 
             placeholder="Пароль"
             required
-          >
+          />
           <button type="submit">Зарегистрироваться</button>
         </form>
         <p>
@@ -65,14 +77,18 @@
 </template>
 
 <script>
+import api from '@/api/auth'
+
 export default {
   name: 'App',
   data() {
     return {
       showRegister: false,
+      showVerification: false,  // Флаг для отображения поля ввода кода 2FA
       loginForm: {
         username: '',
-        password: ''
+        password: '',
+        verificationCode: ''  // Поле для кода 2FA
       },
       registerForm: {
         username: '',
@@ -87,25 +103,49 @@ export default {
     }
   },
   methods: {
-    async login() {
+    async handleLogin() {
+      const credentials = {
+        username: this.loginForm.username,
+        password: this.loginForm.password
+      };
+
       try {
-        await this.$store.dispatch('login', this.loginForm)
-        this.$router.push('/')
+        const response = await api.login(credentials);
+        // Если код 2FA отправлен, показываем поле для ввода кода
+        if (response.data.message === 'Код 2FA отправлен на вашу почту.') {
+          this.showVerification = true;
+        }
       } catch (error) {
-        console.error('Login error:', error)
+        console.error('Ошибка входа:', error);
+      }
+    },
+    async verifyCode() {
+      const credentials = {
+        username: this.loginForm.username,
+        password: this.loginForm.password,
+        code: this.loginForm.verificationCode  // Код 2FA
+      };
+
+      try {
+        const response = await api.login(credentials);  // Используем тот же метод для проверки кода
+        console.log(response.data.token);  // Токен, если аутентификация успешна
+        this.$store.commit('setToken', response.data.token);  // Сохраните токен
+        this.$router.push('/home');  // Перенаправление на защищенную страницу
+      } catch (error) {
+        console.error('Ошибка проверки кода 2FA:', error);
       }
     },
     async register() {
       try {
-        await this.$store.dispatch('register', this.registerForm)
-        this.showRegister = false
+        await this.$store.dispatch('register', this.registerForm);
+        this.showRegister = false;
       } catch (error) {
-        console.error('Registration error:', error)
+        console.error('Ошибка регистрации:', error);
       }
     },
     logout() {
-      this.$store.dispatch('logout')
-      this.$router.push('/')
+      this.$store.dispatch('logout');
+      this.$router.push('/');
     }
   }
 }
