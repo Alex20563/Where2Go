@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',  # Для PostgreSQL
-        'NAME': 'where2go_db',                # Имя вашей базы данных
+        'NAME': 'where2go_db',                # Имя  базы данных
         'USER': 'test_user',                     # Имя пользователя
         'PASSWORD': '123',                 # Пароль
         'HOST': 'localhost',                         # Хост (обычно localhost)
@@ -151,4 +151,4 @@ EMAIL_HOST = 'smtp.yandex.com'  # Замените на ваш SMTP сервер
 EMAIL_PORT = 587  # Обычно 587 для TLS
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'where2go-verification@yandex.ru'  #login fro mail where.2go
-EMAIL_HOST_PASSWORD = 'isywidndmwygtbut'  
+EMAIL_HOST_PASSWORD = 'isywidndmwygtbut'  #пасс для почты

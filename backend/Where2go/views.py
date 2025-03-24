@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, update_session_auth_hash
 import pyotp
 from rest_framework import generics
 from .models import CustomUser
-from .serializers import UserSerializer  # Убедитесь, что у вас есть сериализатор
+from .serializers import UserSerializer  
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
