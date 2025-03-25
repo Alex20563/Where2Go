@@ -6,12 +6,14 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate, update_session_auth_hash
 import pyotp
 from rest_framework import generics
-from .models import CustomUser
-from .serializers import UserSerializer  
+from .models import CustomUser, Group
+from .serializers import UserSerializer, GroupSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 import random
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 # Create your views here.
 
@@ -83,6 +85,14 @@ class UserCreate(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
 
+    @swagger_auto_schema(
+        operation_description="Создание нового пользователя",
+        request_body=UserSerializer,
+        responses={201: UserSerializer}
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 class UpdateUserView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -101,3 +111,75 @@ class UpdateUserView(APIView):
         update_session_auth_hash(request, user)  # Обновляем сессию пользователя
 
         return Response({'message': 'Данные пользователя обновлены успешно.'}, status=status.HTTP_200_OK)
+
+class CreateGroupView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Создание новой группы",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['name'],
+            properties={
+                'name': openapi.Schema(type=openapi.TYPE_STRING, description='Название группы'),
+                'members': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(type=openapi.TYPE_INTEGER),
+                    description='Список ID участников группы'
+                ),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description='Описание группы')
+            }
+        ),
+        responses={
+            201: GroupSerializer,
+            400: 'Bad Request',
+            401: 'Unauthorized'
+        }
+    )
+    def post(self, request):
+        serializer = GroupSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            group = serializer.save()
+            return Response(GroupSerializer(group).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class JoinGroupView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, group_id):
+        group = Group.objects.get(id=group_id)
+        user = request.user
+        group.members.add(user)
+        return Response({'message': 'Вы вступили в группу.'}, status=status.HTTP_200_OK)
+
+class LeaveGroupView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, group_id):
+        group = Group.objects.get(id=group_id)
+        user = request.user
+        group.members.remove(user)
+        return Response({'message': 'Вы покинули группу.'}, status=status.HTTP_200_OK)
+
+class ManageGroupView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, group_id):
+        group = Group.objects.get(id=group_id)
+        if group.admin != request.user:
+            return Response({'error': 'Вы не являетесь администратором этой группы.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Логика управления группой (например, изменение имени группы)
+        new_name = request.data.get('name')
+        if new_name:
+            group.name = new_name
+            group.save()
+            return Response({'message': 'Группа обновлена.'}, status=status.HTTP_200_OK)
+
+    def delete(self, request, group_id):
+        group = Group.objects.get(id=group_id)
+        if group.admin != request.user:
+            return Response({'error': 'Вы не являетесь администратором этой группы.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        group.delete()
+        return Response({'message': 'Группа расформирована.'}, status=status.HTTP_200_OK)

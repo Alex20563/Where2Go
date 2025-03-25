@@ -1,0 +1,134 @@
+/* Основные цвета и темы */
+:root {
+    --primary-color: #417690;
+    --secondary-color: #79aec8;
+    --success-color: #5cb85c;
+    --danger-color: #d9534f;
+    --background-color: #f8f9fa;
+}
+
+/* Стили для кнопок */
+.button {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 2px;
+    border-radius: 4px;
+    color: #fff;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.button-primary {
+    background-color: var(--primary-color);
+}
+
+.button-secondary {
+    background-color: var(--secondary-color);
+}
+
+.button:hover {
+    opacity: 0.9;
+    text-decoration: none;
+    color: #fff;
+}
+
+/* Стили для таблиц */
+.results {
+    width: 100%;
+    margin-bottom: 1rem;
+    border-spacing: 0;
+    border: 1px solid #dee2e6;
+}
+
+.results th {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 12px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.results td {
+    padding: 12px;
+    border-top: 1px solid #dee2e6;
+}
+
+.results tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.results tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Стили для форм */
+.form-row {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.form-row label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-row input[type="text"],
+.form-row input[type="password"],
+.form-row input[type="email"],
+.form-row select,
+.form-row textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Стили для инлайн-форм */
+.inline-group {
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+}
+
+.inline-group h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Стили для сообщений */
+.success {
+    background-color: var(--success-color);
+    color: white;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+.error {
+    background-color: var(--danger-color);
+    color: white;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+}
+
+/* Адаптивный дизайн */
+@media (max-width: 767px) {
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .button {
+        display: block;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}

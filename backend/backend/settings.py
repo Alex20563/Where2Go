@@ -16,9 +16,11 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '..', 'frontend', 'dist', 'static')
+    os.path.join(BASE_DIR, 'Where2go', 'static'),
 ]
 
 # Quick-start development settings - unsuitable for production
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'Where2go',
     'corsheaders',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -152,3 +155,12 @@ EMAIL_PORT = 587  # Обычно 587 для TLS
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'where2go-verification@yandex.ru'  #login fro mail where.2go
 EMAIL_HOST_PASSWORD = 'isywidndmwygtbut'  #пасс для почты
+
+# Настройки админ-панели
+JAZZMIN_SETTINGS = {
+    "site_title": "Where2Go Admin",
+    "site_header": "Where2Go",
+    "site_brand": "Where2Go",
+    "welcome_sign": "Добро пожаловать в админ-панель Where2Go",
+    "copyright": "Where2Go",
+}
