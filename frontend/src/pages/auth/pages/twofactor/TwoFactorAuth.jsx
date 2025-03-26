@@ -1,8 +1,8 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../../../styles/Login.css";
-import React, { useState } from "react";
-import { Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import React, {useState} from "react";
+import {Alert} from "react-bootstrap";
+import {useNavigate} from "react-router-dom";
 
 function TwoFactorAuth() {
     const [code, setCode] = useState("");
