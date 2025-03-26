@@ -1,5 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles/Login.css";
+import "../../styles/Login.css";
 import React from "react";
 
 function Profile() {

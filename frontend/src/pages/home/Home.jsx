@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import logo from "../assets/logo.png";
-import "../styles/Home.css";
-
+import logo from "../../assets/logo.png";
+import "../../styles/Home.css";
 
 function Home() {
     return (
@@ -11,7 +10,7 @@ function Home() {
             <p className="lead">Cпонтанность, организованная с умом</p>
 
             <div className="mt-4 d-flex gap-3">
-                <Link to="/login">
+                <Link to="/login" >
                     <button className="btn btn-lg btn-light px-5 py-3 rounded-pill">
                         Войти
                     </button>
