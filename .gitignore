@@ -1,0 +1,5 @@
+/.idea/
+/node_modules/
+/venv/
+/frontend_test/node_modules/
+/backend/.vs/
