@@ -15,6 +15,7 @@ import random
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+
 # Create your views here.
 
 class LoginView(APIView):
@@ -53,13 +54,14 @@ class LoginView(APIView):
                 }, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Неверный код 2FA.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         return Response({'error': 'Неверные учетные данные.'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class Generate2FASecretView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
         user = request.user
         # Генерация случайного кода
@@ -72,7 +74,7 @@ class Generate2FASecretView(APIView):
             send_mail(
                 'Ваш код двухфакторной аутентификации',
                 f'Ваш код: {verification_code}',
-                'where2go-verification@yandex.ru',  
+                'where2go-verification@yandex.ru',
                 [user.email],
                 fail_silently=False,
             )
@@ -93,6 +95,7 @@ class UserCreate(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
+
 class UpdateUserView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -111,6 +114,7 @@ class UpdateUserView(APIView):
         update_session_auth_hash(request, user)  # Обновляем сессию пользователя
 
         return Response({'message': 'Данные пользователя обновлены успешно.'}, status=status.HTTP_200_OK)
+
 
 class CreateGroupView(APIView):
     permission_classes = [IsAuthenticated]
@@ -143,6 +147,7 @@ class CreateGroupView(APIView):
             return Response(GroupSerializer(group).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class JoinGroupView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -151,6 +156,7 @@ class JoinGroupView(APIView):
         user = request.user
         group.members.add(user)
         return Response({'message': 'Вы вступили в группу.'}, status=status.HTTP_200_OK)
+
 
 class LeaveGroupView(APIView):
     permission_classes = [IsAuthenticated]
@@ -161,6 +167,7 @@ class LeaveGroupView(APIView):
         group.members.remove(user)
         return Response({'message': 'Вы покинули группу.'}, status=status.HTTP_200_OK)
 
+
 class ManageGroupView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -168,7 +175,7 @@ class ManageGroupView(APIView):
         group = Group.objects.get(id=group_id)
         if group.admin != request.user:
             return Response({'error': 'Вы не являетесь администратором этой группы.'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         # Логика управления группой (например, изменение имени группы)
         new_name = request.data.get('name')
         if new_name:
@@ -180,6 +187,6 @@ class ManageGroupView(APIView):
         group = Group.objects.get(id=group_id)
         if group.admin != request.user:
             return Response({'error': 'Вы не являетесь администратором этой группы.'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         group.delete()
         return Response({'message': 'Группа расформирована.'}, status=status.HTTP_200_OK)

@@ -1,10 +1,10 @@
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
 
-import Login from "./pages/auth/pages/login/Login";
-import Register from "./pages/auth/pages/register/Register";
-import Home from "./pages/home/Home";
-import Profile from "./pages/profile/Profile";
-import TwoFactorAuth from "./pages/auth/pages/twofactor/TwoFactorAuth";
+import Login from "./screens/auth/pages/login/Login";
+import Register from "./screens/auth/pages/register/Register";
+import Home from "./screens/home/Home";
+import Profile from "./screens/profile/Profile";
+import TwoFactorAuth from "./screens/auth/pages/twofactor/TwoFactorAuth";
 
 function App() {
     return (

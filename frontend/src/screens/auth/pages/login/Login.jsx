@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../../../../styles/Login.css";
 import React, {useState} from "react";
 import {Alert} from 'react-bootstrap';
+import axios from "axios";
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -10,12 +11,6 @@ function Login() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const navigate = useNavigate();
-
-    // Заглушка для проверки логина и пароля
-    const mockUsers = [
-        {email: "test@example.com", password: "Test123"},
-        {email: "admin@example.com", password: "Admin123"}
-    ];
 
     const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,7 +22,7 @@ function Login() {
         return passwordRegex.test(password);
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
 
@@ -46,18 +41,18 @@ function Login() {
             return;
         }
 
-        // TODO: запрос на бэкенд
-        const user = mockUsers.find(
-            (user) => user.email === email && user.password === password);
+        try {
+            const response = await axios.post("http://localhost:8000/api/login/", {email, password});
 
-        if (!user) {
-            setError("Неверный email или пароль.");
-            return;
+            if (response.status === 201) {
+                setSuccess("Вход успешен!");
+                console.log("Успешный вход:", response.data);
+                setTimeout(() => navigate("/2fa"), 1500);
+            }
+        } catch (error) {
+            setError("Ошибка входа. Проверьте данные.");
+            console.error("Ошибка запроса:", error);
         }
-
-        setSuccess("Вход успешен!");
-        setTimeout(() => navigate("/2fa"), 1500);
-        console.log("Пользователь вошел:", {email});
     };
 
     return (

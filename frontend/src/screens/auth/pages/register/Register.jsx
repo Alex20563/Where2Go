@@ -2,7 +2,8 @@ import {Link, useNavigate} from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../../../styles/Login.css";
 import React, {useState} from "react";
-import {Alert} from "react-bootstrap"; // Используем те же стили
+import {Alert} from "react-bootstrap";
+import axios from "axios";
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -25,13 +26,6 @@ function Register() {
         return passwordRegex.test(password);
     };
 
-    // Проверка уникальности имени
-    const checkUsernameUnique = (username) => {
-        // TODO: запрос к серверу
-        const existingUsers = ["user1", "test", "admin"];
-        return !existingUsers.includes(username);
-    };
-
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
@@ -47,11 +41,6 @@ function Register() {
             return;
         }
 
-        if (!checkUsernameUnique(username)) {
-            setError("Имя пользователя уже занято.");
-            return;
-        }
-
         if (!validatePassword(password)) {
             setError("Пароль должен содержать не менее 6 символов, включая цифры и заглавные и строчные буквы.");
             return;
@@ -63,12 +52,22 @@ function Register() {
         }
 
         try {
-            // TODO: отправить на сервер
-            console.log("Отправка данных на сервер...", {username, email, password});
-            setSuccess("Вы успешно зарегистрированы!");
-            setTimeout(() => navigate("/2fa"), 1500);
+            const response = await axios.post("http://localhost:8000/api/register/", {
+                username,
+                email,
+                password
+            });
+
+            if (response.status === 201) {
+                setSuccess("Вы успешно зарегистрированы! Перенаправление...");
+                setTimeout(() => navigate("/2fa"), 1500);
+            }
         } catch (err) {
-            setError("Ошибка при регистрации. Попробуйте снова.");
+            if (err.response) {
+                setError("Ошибка при регистрации: " + (err.response.data.detail || "Попробуйте снова."));
+            } else {
+                setError("Ошибка сети. Проверьте соединение.");
+            }
         }
     };
 

@@ -3,3 +3,4 @@
 /venv/
 /frontend_test/node_modules/
 /backend/.vs/
+/.venv/
