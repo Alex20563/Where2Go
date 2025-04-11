@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Navbar, Nav, Container, Button, Modal } from "react-bootstrap";
+import { Container, Button } from "react-bootstrap";
 import "../../styles/Profile.css";
 import NavigationBar from "./components/NavigationBar";
 
@@ -31,7 +31,9 @@ const Profile = (props) => {
 
                 <Container className="mt-4">
                     <h2>Мои группы</h2>
-                    <Button variant="success" className="mb-3">➕ Создать группу</Button>
+                    <Button variant="success" className="mb-3" onClick={() => navigate("/create-group")}>
+                        ➕ Создать группу
+                    </Button>
                     <ul className="list-group">
                         {user.groups.map(group => (
                             <li key={group.id} className="list-group-item">{group.name}</li>

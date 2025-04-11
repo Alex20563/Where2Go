@@ -10,7 +10,7 @@ const NavigationBar = ({ user, handleLogout }) => {
         <>
             <Navbar style={{ backgroundColor: "#79afe8" }} expand="lg">
                 <Container>
-                    <Navbar.Brand href="#">
+                    <Navbar.Brand href="\profile">
                         <img
                             src={icon}
                             alt="Logo"
