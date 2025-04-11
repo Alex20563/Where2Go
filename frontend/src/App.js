@@ -9,6 +9,7 @@ import CreateGroup from "./screens/group/CreateGroup";
 import CreatePoll from "./screens/poll/CreatePoll";
 import AllGroups from "./screens/group/AllGroups";
 import ManageGroup from "./screens/group/ManageGroup";
+import AllPolls from "./screens/poll/AllPools";
 
 function App() {
     return (
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/create-poll" element={<CreatePoll/>}/>
                 <Route path="/groups" element={<AllGroups/>}/>
                 <Route path="/groups/:groupId" element={<ManageGroup/>}/>
+                <Route path="/polls" element={<AllPolls/>}/>
             </Routes>
         </Router>
     );

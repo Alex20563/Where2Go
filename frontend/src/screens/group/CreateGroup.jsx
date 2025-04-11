@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Alert, Button, Container } from "react-bootstrap";
 import NavigationBar from "../../components/NavigationBar";
-import axios from "axios";
+import API from "../../api";
 
 const CreateGroup = () => {
     const [groupName, setGroupName] = useState("");
@@ -29,7 +29,7 @@ const CreateGroup = () => {
 
         setSearchResults(filtered);
         // try {
-        //     const response = await axios.get(`http://localhost:8000/api/users/search/?q=${searchTerm}`);
+        //     const response = await API.get('/users/search/?q=${searchTerm}');
         //     setSearchResults(response.data);
         // } catch (err) {
         //     console.error("Ошибка поиска:", err);
@@ -70,7 +70,7 @@ const CreateGroup = () => {
             setSearchTerm("");
         }, 1000);
         // try {
-        //     const response = await axios.post("http://localhost:8000/api/groups/create/", {
+        //     const response = await API.post("/groups/create/", {
         //         name: groupName,
         //         users: selectedUsers.map(u => u.id)
         //     });

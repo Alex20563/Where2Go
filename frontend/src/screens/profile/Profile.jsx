@@ -4,7 +4,7 @@ import {Container, Button} from "react-bootstrap";
 import "../../styles/Profile.css";
 import NavigationBar from "../../components/NavigationBar";
 
-const Profile = (props) => {
+const Profile = () => {
     const navigate = useNavigate();
     // TODO: заменить на реального пользователя
     const [user] = useState({
@@ -54,9 +54,19 @@ const Profile = (props) => {
                 </ul>
 
                 <h2 className="mt-4">Доступные опросы</h2>
-                <Button variant="outline-secondary" className="mb-3" onClick={() => navigate("/create-poll")}>
-                    Создать опрос
-                </Button>
+                <div style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between"
+                }}>
+                    <Button variant="outline-secondary" className="mb-3" onClick={() => navigate("/create-poll")}>
+                        Создать опрос
+                    </Button>
+                    <Button variant="primary" className="mb-3 ms-2" onClick={() => navigate("/polls")}>
+                        Все опросы
+                    </Button>
+                </div>
                 <ul className="list-group">
                     {user.polls.map(poll => (
                         <li key={poll.id} className="list-group-item">{poll.question}</li>

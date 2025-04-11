@@ -1,9 +1,9 @@
 import {Link, useNavigate} from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../../../styles/Login.css";
+import API from "../../../../api";
 import React, {useState} from "react";
 import {Alert} from 'react-bootstrap';
-import axios from "axios";
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -42,7 +42,8 @@ function Login() {
         }
 
         try {
-            const response = await axios.post("http://localhost:8000/api/login/", {email, password});
+            const response = await API.post("/login/", {email, password});
+            console.log(response.data);
 
             if (response.status === 201) {
                 setSuccess("Вход успешен!");

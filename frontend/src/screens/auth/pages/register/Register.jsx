@@ -4,6 +4,7 @@ import "../../../../styles/Login.css";
 import React, {useState} from "react";
 import {Alert} from "react-bootstrap";
 import axios from "axios";
+import API from "../../../../api";
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -52,7 +53,7 @@ function Register() {
         }
 
         try {
-            const response = await axios.post("http://localhost:8000/api/register/", {
+            const response = await API.post("/register/", {
                 username,
                 email,
                 password

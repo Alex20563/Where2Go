@@ -8,7 +8,6 @@ const CreatePoll = (props) => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    // Получаем groupId и groupName через props
     const { groupId: initialGroupId } = props;
 
     useEffect(() => {
@@ -21,7 +20,6 @@ const CreatePoll = (props) => {
         { id: 1, name: "Друзья" },
         { id: 2, name: "Работа" },
     ];
-
 
     const handleSubmit = async () => {
         setError("");
