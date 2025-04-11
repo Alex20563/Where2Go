@@ -1,6 +1,5 @@
 .home-container {
-    /*background: url("../assets/background-gradient.png") no-repeat center center fixed;*/
-    background: #f0f8ff;
+    background: var(--main-bg-color);
     background-size: cover;
     display: flex;
     align-items: center;

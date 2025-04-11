@@ -36,3 +36,7 @@
         transform: rotate(360deg);
     }
 }
+
+:root {
+    --main-bg-color: #f0f8ff;
+}
