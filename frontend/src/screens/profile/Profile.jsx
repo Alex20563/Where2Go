@@ -41,6 +41,9 @@ const Profile = (props) => {
                     </ul>
 
                     <h2 className="mt-4">Доступные опросы</h2>
+                    <Button variant="success" className="mb-3" onClick={() => navigate("/create-poll")}>
+                        ➕ Создать опрос
+                    </Button>
                     <ul className="list-group">
                         {user.polls.map(poll => (
                             <li key={poll.id} className="list-group-item">{poll.question}</li>

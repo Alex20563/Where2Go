@@ -6,6 +6,7 @@ import Home from "./screens/home/Home";
 import Profile from "./screens/profile/Profile";
 import TwoFactorAuth from "./screens/auth/pages/twofactor/TwoFactorAuth";
 import CreateGroup from "./screens/profile/CreateGroup";
+import CreatePoll from "./screens/profile/CreatePoll";
 
 function App() {
     return (
@@ -18,7 +19,8 @@ function App() {
                 {/* TODO: защитить от перехода на страницы без авторизации */}
                 <Route path="/profile" element={<Profile/>}/>
                 <Route path="/2fa" element={<TwoFactorAuth/>}/>
-                <Route path="/create-group" element={<CreateGroup/>} />
+                <Route path="/create-group" element={<CreateGroup/>}/>
+                <Route path="/create-poll" element={<CreatePoll/>}/>
             </Routes>
         </Router>
     );
