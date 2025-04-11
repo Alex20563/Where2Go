@@ -1,7 +1,7 @@
 // NavigationBar.jsx
 import React from "react";
 import { Navbar, Nav, Container, Button, Modal } from "react-bootstrap";
-import icon from "../../../assets/icon.png";
+import icon from "../assets/icon.png";
 
 const NavigationBar = ({ user, handleLogout }) => {
     const [showSettings, setShowSettings] = React.useState(false);

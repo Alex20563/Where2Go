@@ -5,8 +5,8 @@ import Register from "./screens/auth/pages/register/Register";
 import Home from "./screens/home/Home";
 import Profile from "./screens/profile/Profile";
 import TwoFactorAuth from "./screens/auth/pages/twofactor/TwoFactorAuth";
-import CreateGroup from "./screens/profile/CreateGroup";
-import CreatePoll from "./screens/profile/CreatePoll";
+import CreateGroup from "./screens/group/CreateGroup";
+import CreatePoll from "./screens/poll/CreatePoll";
 
 function App() {
     return (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Container, Button, Alert } from "react-bootstrap";
-import NavigationBar from "./components/NavigationBar";
+import NavigationBar from "../../components/NavigationBar";
 
 const CreatePoll = () => {
     const [question, setQuestion] = useState("");

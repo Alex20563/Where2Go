@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Button } from "react-bootstrap";
 import "../../styles/Profile.css";
-import NavigationBar from "./components/NavigationBar";
+import NavigationBar from "../../components/NavigationBar";
 
 const Profile = (props) => {
     const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Alert, Button, Container } from "react-bootstrap";
-import NavigationBar from "./components/NavigationBar";
+import NavigationBar from "../../components/NavigationBar";
 import axios from "axios";
 
 const CreateGroup = () => {
