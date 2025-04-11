@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Container, Button } from "react-bootstrap";
+import React, {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {Container, Button} from "react-bootstrap";
 import "../../styles/Profile.css";
 import NavigationBar from "../../components/NavigationBar";
 
@@ -11,12 +11,15 @@ const Profile = (props) => {
         username: "User123",
         email: "user@example.com",
         groups: [
-            { id: 1, name: "Друзья" },
-            { id: 2, name: "Коллеги" },
+            {id: 1, name: "Друзья"},
+            {id: 2, name: "Коллеги"},
+            {id: 3, name: "Семья"},
+            {id: 4, name: "Товарищи по хобби"},
+            {id: 5, name: "Спортивная команда"},
         ],
         polls: [
-            { id: 101, question: "Где встретимся на выходных?" },
-            { id: 102, question: "Лучший ресторан на день рождения?" },
+            {id: 101, question: "Где встретимся на выходных?"},
+            {id: 102, question: "Лучший ресторан на день рождения?"},
         ],
     });
 
@@ -25,32 +28,42 @@ const Profile = (props) => {
         setTimeout(() => navigate("/login"), 1500);
     };
 
-        return (
-            <div className="profile-container">
-                <NavigationBar user={user} handleLogout={handleLogout} />
+    return (
+        <div className="profile-container">
+            <NavigationBar user={user} handleLogout={handleLogout}/>
 
-                <Container className="mt-4">
-                    <h2>Мои группы</h2>
-                    <Button variant="success" className="mb-3" onClick={() => navigate("/create-group")}>
-                        ➕ Создать группу
+            <Container className="mt-4">
+                <h2>Мои группы</h2>
+                <div style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between"
+                }}>
+                    <Button variant="outline-secondary" className="mb-3" onClick={() => navigate("/create-group")}>
+                        Создать группу
                     </Button>
-                    <ul className="list-group">
-                        {user.groups.map(group => (
-                            <li key={group.id} className="list-group-item">{group.name}</li>
-                        ))}
-                    </ul>
+                    <Button variant="primary" className="mb-3 ms-2" onClick={() => navigate("/groups")}>
+                        Все группы
+                    </Button>
+                </div>
+                <ul className="list-group">
+                    {user.groups.slice(0, 3).map(group => (
+                        <li key={group.id} className="list-group-item">{group.name}</li>
+                    ))}
+                </ul>
 
-                    <h2 className="mt-4">Доступные опросы</h2>
-                    <Button variant="success" className="mb-3" onClick={() => navigate("/create-poll")}>
-                        ➕ Создать опрос
-                    </Button>
-                    <ul className="list-group">
-                        {user.polls.map(poll => (
-                            <li key={poll.id} className="list-group-item">{poll.question}</li>
-                        ))}
-                    </ul>
-                </Container>
-            </div>
+                <h2 className="mt-4">Доступные опросы</h2>
+                <Button variant="outline-secondary" className="mb-3" onClick={() => navigate("/create-poll")}>
+                    Создать опрос
+                </Button>
+                <ul className="list-group">
+                    {user.polls.map(poll => (
+                        <li key={poll.id} className="list-group-item">{poll.question}</li>
+                    ))}
+                </ul>
+            </Container>
+        </div>
     );
 };
 

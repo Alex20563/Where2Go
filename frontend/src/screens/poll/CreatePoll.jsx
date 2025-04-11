@@ -1,12 +1,19 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { Container, Button, Alert } from "react-bootstrap";
 import NavigationBar from "../../components/NavigationBar";
 
-const CreatePoll = () => {
+const CreatePoll = (props) => {
     const [question, setQuestion] = useState("");
     const [groupId, setGroupId] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+
+    // Получаем groupId и groupName через props
+    const { groupId: initialGroupId } = props;
+
+    useEffect(() => {
+        setGroupId(initialGroupId || "");
+    }, [initialGroupId]);
 
     // TODO: заменить на реальные данные пользователя и групп
     const user = { username: "User123", email: "user@example.com" };
@@ -14,6 +21,7 @@ const CreatePoll = () => {
         { id: 1, name: "Друзья" },
         { id: 2, name: "Работа" },
     ];
+
 
     const handleSubmit = async () => {
         setError("");

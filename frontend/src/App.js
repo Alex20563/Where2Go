@@ -7,6 +7,8 @@ import Profile from "./screens/profile/Profile";
 import TwoFactorAuth from "./screens/auth/pages/twofactor/TwoFactorAuth";
 import CreateGroup from "./screens/group/CreateGroup";
 import CreatePoll from "./screens/poll/CreatePoll";
+import AllGroups from "./screens/group/AllGroups";
+import ManageGroup from "./screens/group/ManageGroup";
 
 function App() {
     return (
@@ -21,6 +23,8 @@ function App() {
                 <Route path="/2fa" element={<TwoFactorAuth/>}/>
                 <Route path="/create-group" element={<CreateGroup/>}/>
                 <Route path="/create-poll" element={<CreatePoll/>}/>
+                <Route path="/groups" element={<AllGroups/>}/>
+                <Route path="/groups/:groupId" element={<ManageGroup/>}/>
             </Routes>
         </Router>
     );
