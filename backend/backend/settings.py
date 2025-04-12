@@ -164,3 +164,33 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "Добро пожаловать в админ-панель Where2Go",
     "copyright": "Where2Go",
 }
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Token': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'OPERATIONS_SORTER': 'alpha',
+    'TAGS_SORTER': 'alpha',
+    'DOC_EXPANSION': 'none',
+    'DEFAULT_MODEL_RENDERING': 'example',
+    'DEFAULT_INFO': {
+        'description': """
+API для приложения Where2Go.
+- Аутентификация через токены
+- Управление пользователями и группами
+- Создание и управление опросами
+        """,
+        'terms_of_service': "https://www.google.com/policies/terms/",
+        'contact': {
+            'email': "contact@where2go.local"
+        },
+        'license': {
+            'name': "BSD License"
+        }
+    }
+}
