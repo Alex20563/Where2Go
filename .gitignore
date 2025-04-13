@@ -5,3 +5,4 @@
 /backend/.vs/
 /.venv/
 /frontend/node_modules/
+/frontend/dist/
