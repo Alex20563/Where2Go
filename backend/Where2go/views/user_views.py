@@ -17,6 +17,7 @@ from drf_yasg import openapi
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 
+
 class UserCreate(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
@@ -50,6 +51,7 @@ class UserCreate(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+
 class UpdateUserView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -80,6 +82,7 @@ class UpdateUserView(APIView):
 
         return Response({'message': 'Данные пользователя обновлены успешно.'}, status=status.HTTP_200_OK)
 
+
 class UserListView(ListAPIView):
     """Получение списка всех пользователей"""
     queryset = CustomUser.objects.all()
@@ -92,6 +95,7 @@ class UserListView(ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
 
 class UserDetailView(RetrieveAPIView):
     """Получение информации о конкретном пользователе"""
@@ -107,6 +111,7 @@ class UserDetailView(RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
+
 class UserDeleteView(DestroyAPIView):
     """Удаление пользователя"""
     queryset = CustomUser.objects.all()
@@ -120,6 +125,7 @@ class UserDeleteView(DestroyAPIView):
     def delete(self, request, *args, **kwargs):
         return super().delete(request, *args, **kwargs)
 
+
 class UserFriendsView(APIView):
     """Получение списка друзей пользователя"""
     permission_classes = [IsAuthenticated]
@@ -132,4 +138,16 @@ class UserFriendsView(APIView):
         user = get_object_or_404(CustomUser, id=user_id)
         friends = user.friends.all()
         serializer = UserListSerializer(friends, many=True)
-        return Response(serializer.data) 
+        return Response(serializer.data)
+
+
+class GetMeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        })

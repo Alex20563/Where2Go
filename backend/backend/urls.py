@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, re_path
 from django.views.generic import TemplateView
 from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView
-from Where2go.views.user_views import UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
+from Where2go.views.user_views import GetMeView, UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
 from Where2go.views.group_views import CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
 from Where2go.views.poll_views import CreatePollView, PollListView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
@@ -46,7 +46,8 @@ urlpatterns = [
     path('api/auth/login-2fa', LoginView2FA.as_view(), name='login-2fa'),
     path('api/auth/generate-2fa-secret', Generate2FASecretView.as_view(), name='generate-2fa-secret'),
     path('api/auth/login', LoginView.as_view(), name='login'),
-    
+    path('api/auth/me/', GetMeView.as_view(), name='get_me'),
+
     path('api/users/update/', UpdateUserView.as_view(), name='update-user'),
     path('api/users/list', UserListView.as_view(), name='user-list'),
     path('api/users/<int:id>/', UserDetailView.as_view(), name='user-detail'),
