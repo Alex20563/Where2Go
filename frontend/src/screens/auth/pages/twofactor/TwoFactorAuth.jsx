@@ -38,7 +38,7 @@ function TwoFactorAuth() {
 
             if (response.status === 200) {
                 setSuccess("Код подтвержден! Вход выполнен.");
-                localStorage.setItem("token", response.data.token);
+                localStorage.setItem('token', response.data.token);
                 setTimeout(() => navigate("/profile"), 1500);
             }
         } catch (error) {
