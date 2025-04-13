@@ -46,7 +46,7 @@ urlpatterns = [
     path('api/auth/login-2fa', LoginView2FA.as_view(), name='login-2fa'),
     path('api/auth/generate-2fa-secret', Generate2FASecretView.as_view(), name='generate-2fa-secret'),
     path('api/auth/login', LoginView.as_view(), name='login'),
-    path('api/auth/me/', GetMeView.as_view(), name='get_me'),
+    path('api/auth/me', GetMeView.as_view(), name='get_me'),
 
     path('api/users/update/', UpdateUserView.as_view(), name='update-user'),
     path('api/users/list', UserListView.as_view(), name='user-list'),
