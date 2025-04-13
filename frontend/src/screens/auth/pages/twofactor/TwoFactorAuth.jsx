@@ -1,20 +1,25 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../../../styles/Login.css";
+import API from "../../../../api";
 import React, {useState} from "react";
 import {Alert} from "react-bootstrap";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
+
 
 function TwoFactorAuth() {
     const [code, setCode] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const navigate = useNavigate();
+    const location = useLocation();
+    const { username, password } = location.state || {};
+
 
     const validateCode = (code) => {
         return /^\d{6}$/.test(code);
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
         setSuccess("");
@@ -24,12 +29,27 @@ function TwoFactorAuth() {
             return;
         }
 
-        // TODO: Запрос на бэк
-        if (code === "123456") {
-            setSuccess("Код подтвержден! Вход выполнен.");
-            setTimeout(() => navigate("/profile"), 1500);
-        } else {
-            setError("Неверный код. Проверьте почту и попробуйте снова.");
+        try {
+            const response = await API.post("/auth/login-2fa", {
+                username: username,
+                password: password,
+                code: code
+            });
+
+            if (response.status === 200) {
+                setSuccess("Код подтвержден! Вход выполнен.");
+                localStorage.setItem("token", response.data.token);
+                setTimeout(() => navigate("/profile"), 1500);
+            }
+        } catch (error) {
+            console.error("Ошибка запроса:", error);
+            if (error.response?.status === 400) {
+                setError("Неверный код. Проверьте почту.");
+            } else if (error.response?.status === 401) {
+                setError("Неверные email или пароль.");
+            } else {
+                setError("Ошибка подтверждения. Попробуйте позже.");
+            }
         }
     };
 

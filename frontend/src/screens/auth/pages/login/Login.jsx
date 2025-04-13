@@ -6,16 +6,11 @@ import React, {useState} from "react";
 import {Alert} from 'react-bootstrap';
 
 function Login() {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const navigate = useNavigate();
-
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
 
     const validatePassword = (password) => {
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
@@ -25,34 +20,35 @@ function Login() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
+        setSuccess("");
 
-        if (!email || !password) {
-            setError("Введите и email, и пароль.");
-            return;
-        }
-
-        if (!validateEmail(email)) {
-            setError("Введите корректный email.");
-            return;
-        }
-
-        if (!validatePassword(password)) {
-            setError("Неверный email или пароль.");
+        if (!username || !password || !validatePassword(password)) {
+            setError("Неверные имя пользователя или пароль.");
             return;
         }
 
         try {
-            const response = await API.post("/login/", {email, password});
-            console.log(response.data);
+            const response = await API.post("/auth/login-2fa", {
+                username: username,
+                password: password
+            });
 
-            if (response.status === 201) {
-                setSuccess("Вход успешен!");
-                console.log("Успешный вход:", response.data);
-                setTimeout(() => navigate("/2fa"), 1500);
+            if (response.status === 200) {
+                setSuccess("Вход успешен! Перенаправление...");
+                setTimeout(() => navigate("/2fa", {
+                    state: {username, password}
+                }), 1500);
+
             }
         } catch (error) {
-            setError("Ошибка входа. Проверьте данные.");
             console.error("Ошибка запроса:", error);
+            if (error.response?.status === 400) {
+                setError("Неверный код 2FA.");
+            } else if (error.response?.status === 401) {
+                setError("Неверные имя пользователя или пароль.");
+            } else {
+                setError("Ошибка входа. Попробуйте позже.");
+            }
         }
     };
 
@@ -65,12 +61,12 @@ function Login() {
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
-                        <label className="form-label">Email</label>
-                        <input type="email"
+                        <label className="form-label">Имя пользователя</label>
+                        <input type="text"
                                className="form-control"
-                               placeholder="Введите email"
-                               value={email}
-                               onChange={(e) => setEmail(e.target.value)}
+                               placeholder="Введите имя пользователя"
+                               value={username}
+                               onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
 

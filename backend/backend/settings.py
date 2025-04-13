@@ -95,13 +95,14 @@ DATABASES = {
         'USER': 'test_user',                     # Имя пользователя
         'PASSWORD': '123',                 # Пароль
         'HOST': 'localhost',                         # Хост (обычно localhost)
-        'PORT': '5433',                              # Порт (по умолчанию 5432 для PostgreSQL)
+        'PORT': '5432',                              # Порт (по умолчанию 5432 для PostgreSQL)
     }
 }
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:8081",
+    "http://localhost:3000",
 ]
 
 # Password validation
