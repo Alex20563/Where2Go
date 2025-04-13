@@ -1,32 +1,64 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Container, Button} from "react-bootstrap";
+import {Container, Button, Spinner} from "react-bootstrap";
 import "../../styles/Profile.css";
 import NavigationBar from "../../components/NavigationBar";
+import API from "../../api";
 
 const Profile = () => {
     const navigate = useNavigate();
-    // TODO: заменить на реального пользователя
-    const [user] = useState({
-        username: "User123",
-        email: "user@example.com",
-        groups: [
-            {id: 1, name: "Друзья"},
-            {id: 2, name: "Коллеги"},
-            {id: 3, name: "Семья"},
-            {id: 4, name: "Товарищи по хобби"},
-            {id: 5, name: "Спортивная команда"},
-        ],
-        polls: [
-            {id: 101, question: "Где встретимся на выходных?"},
-            {id: 102, question: "Лучший ресторан на день рождения?"},
-        ],
-    });
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await API.get("/auth/me");
+
+                if (response.status !== 200) {
+                    throw new Error("Ошибка при загрузке пользователя");
+                }
+
+                const data = response.data;
+
+                //TODO: реальный запрос на сервер
+                setUser({
+                    ...data,
+                    groups: [
+                        {id: 1, name: "Группа 1"},
+                        {id: 2, name: "Группа 2"},
+                        {id: 3, name: "Группа 3"}
+                    ],
+                    polls: [
+                        {id: 101, question: "Пример вопроса 1"},
+                        {id: 102, question: "Пример вопроса 2"}
+                    ]
+                });
+            } catch (error) {
+                console.error(error);
+                navigate("/login");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [navigate]);
 
     const handleLogout = () => {
         console.log("Выход из аккаунта...");
+        localStorage.removeItem("token");
         setTimeout(() => navigate("/login"), 1500);
     };
+
+    if (loading) return (
+        <div className="d-flex justify-content-center mt-5">
+            <Spinner animation="border" role="status">
+                <span className="visually-hidden">Загрузка...</span>
+            </Spinner>
+        </div>
+    );
+    if (!user) return <p>Пользователь не найден</p>;
 
     return (
         <div className="profile-container">
