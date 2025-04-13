@@ -1,21 +1,14 @@
-from django.shortcuts import render
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate, update_session_auth_hash
-import pyotp
-from rest_framework import generics
-from ..models import CustomUser, Group, Poll, PollOption
-from ..serializers import UserSerializer, GroupSerializer, UserListSerializer, UserDetailSerializer, PollSerializer
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from ..models import CustomUser, Group
+from ..serializers import GroupSerializer
+from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
-import random
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
+
 
 class CreateGroupView(APIView):
     permission_classes = [IsAuthenticated]
@@ -48,6 +41,7 @@ class CreateGroupView(APIView):
             return Response(GroupSerializer(group).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class JoinGroupView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -61,6 +55,7 @@ class JoinGroupView(APIView):
         group.members.add(user)
         return Response({'message': 'Вы вступили в группу.'}, status=status.HTTP_200_OK)
 
+
 class LeaveGroupView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -73,6 +68,7 @@ class LeaveGroupView(APIView):
         user = request.user
         group.members.remove(user)
         return Response({'message': 'Вы покинули группу.'}, status=status.HTTP_200_OK)
+
 
 class ManageGroupView(APIView):
     permission_classes = [IsAuthenticated]
@@ -91,7 +87,7 @@ class ManageGroupView(APIView):
         group = Group.objects.get(id=group_id)
         if group.admin != request.user:
             return Response({'error': 'Вы не являетесь администратором этой группы.'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         # Логика управления группой (например, изменение имени группы)
         new_name = request.data.get('name')
         if new_name:
@@ -107,13 +103,14 @@ class ManageGroupView(APIView):
         group = Group.objects.get(id=group_id)
         if group.admin != request.user:
             return Response({'error': 'Вы не являетесь администратором этой группы.'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         group.delete()
         return Response({'message': 'Группа расформирована.'}, status=status.HTTP_200_OK)
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#Swagger
-#Группы согласнно доку 
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Swagger
+# Группы согласнно доку
 class GroupView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -136,6 +133,7 @@ class GroupView(APIView):
             return Response(GroupSerializer(group).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class GroupMemberView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -155,6 +153,7 @@ class GroupMemberView(APIView):
         group.members.remove(member)
         return Response({'message': 'Участник удален.'}, status=status.HTTP_200_OK)
 
+
 class DeleteGroupView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -170,6 +169,20 @@ class DeleteGroupView(APIView):
         group = get_object_or_404(Group, id=group_id)
         if group.admin != request.user:
             return Response({'error': 'У вас нет прав для удаления этой группы.'}, status=status.HTTP_403_FORBIDDEN)
-        
+
         group.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ListUserGroupsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Получение списка групп, в которых состоит пользователь",
+        responses={200: GroupSerializer(many=True)}
+    )
+    def get(self, request):
+        user = request.user
+        groups = Group.objects.filter(members=user)
+        serializer = GroupSerializer(groups, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

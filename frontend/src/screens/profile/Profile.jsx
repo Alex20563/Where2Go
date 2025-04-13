@@ -13,25 +13,23 @@ const Profile = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await API.get("/auth/me");
-
-                if (response.status !== 200) {
+                const userResponse = await API.get("/auth/me");
+                if (userResponse.status !== 200) {
                     throw new Error("Ошибка при загрузке пользователя");
                 }
 
-                const data = response.data;
+                const userData = userResponse.data;
 
-                //TODO: реальный запрос на сервер
+                const groupsResponse = await API.get("/groups/");
+                const groupsData = Array.isArray(groupsResponse.data) ? groupsResponse.data : [];
+
                 setUser({
-                    ...data,
-                    groups: [
-                        {id: 1, name: "Группа 1"},
-                        {id: 2, name: "Группа 2"},
-                        {id: 3, name: "Группа 3"}
-                    ],
+                    ...userData,
+                    groups: groupsData,
                     polls: [
-                        {id: 101, question: "Пример вопроса 1"},
-                        {id: 102, question: "Пример вопроса 2"}
+                        // TODO
+                        { id: 101, question: "Пример вопроса 1" },
+                        { id: 102, question: "Пример вопроса 2" }
                     ]
                 });
             } catch (error) {
@@ -79,6 +77,15 @@ const Profile = () => {
                         Все группы
                     </Button>
                 </div>
+                {user.groups.length === 0 ? (
+                    <p>Вы пока не создали ни одной группы.</p>
+                ) : (
+                    <ul className="list-group">
+                        {user.groups.slice(0, 3).map(group => (
+                            <li key={group.id} className="list-group-item">{group.name}</li>
+                        ))}
+                    </ul>
+                )}
                 <ul className="list-group">
                     {user.groups.slice(0, 3).map(group => (
                         <li key={group.id} className="list-group-item">{group.name}</li>
