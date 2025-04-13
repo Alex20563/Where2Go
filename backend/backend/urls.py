@@ -17,7 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 from django.views.generic import TemplateView
-from Where2go.views import UserCreate, LoginView, Generate2FASecretView, UpdateUserView, CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView
+from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView
+from Where2go.views.user_views import UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
+from Where2go.views.group_views import CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
+from Where2go.views.poll_views import CreatePollView, PollListView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
+from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
+
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -34,21 +39,53 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
-
+#LoginView,  UserCreate
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/register/', UserCreate.as_view(), name='user-register'),
-    path('api/login/', LoginView.as_view(), name='login'),
-    path('api/generate-2fa-secret/', Generate2FASecretView.as_view(), name='generate-2fa-secret'),
-    path('api/update-user/', UpdateUserView.as_view(), name='update-user'),
-    path('api/create-group/', CreateGroupView.as_view(), name='create-group'),
+    path('api/auth/register', UserCreate.as_view(), name='register'),
+    path('api/auth/login-2fa', LoginView2FA.as_view(), name='login-2fa'),
+    path('api/auth/generate-2fa-secret', Generate2FASecretView.as_view(), name='generate-2fa-secret'),
+    path('api/auth/login', LoginView.as_view(), name='login'),
+    
+    path('api/users/update/', UpdateUserView.as_view(), name='update-user'),
+    path('api/users/list', UserListView.as_view(), name='user-list'),
+    path('api/users/<int:id>/', UserDetailView.as_view(), name='user-detail'),
+    path('api/users/<int:user_id>/delete/', UserDeleteView.as_view(), name='user-delete'),
+    path('api/users/<int:user_id>/friends/', UserFriendsView.as_view(), name='user-friends'),
+    
+    path('api/groups/create', CreateGroupView.as_view(), name='create-group'),
     path('api/join-group/<int:group_id>/', JoinGroupView.as_view(), name='join-group'),
     path('api/leave-group/<int:group_id>/', LeaveGroupView.as_view(), name='leave-group'),
     path('api/manage-group/<int:group_id>/', ManageGroupView.as_view(), name='manage-group'),
+    #path('api/groups/', GroupView.as_view(), name='group-list'),
+    path('api/groups/<int:group_id>/add-member/', GroupMemberView.as_view(), name='add-member'),
+    path('api/groups/<int:group_id>/remove-member/', GroupMemberView.as_view(), name='remove-member'),
+    path('api/groups/<int:group_id>/', DeleteGroupView.as_view(), name='delete-group'),
+    
+    path('api/groups/<int:group_id>/polls/', PollListView.as_view(), name='poll-list'),
+    path('api/groups/<int:group_id>/polls/create/', CreatePollView.as_view(), name='create-poll'),
+    path('api/polls/<int:id>/', PollDetailView.as_view(), name='poll-detail'),
+    path('api/polls/<int:poll_id>/close/', ClosePollView.as_view(), name='close-poll'),
+    path('api/polls/<int:poll_id>/vote/', VotePollView.as_view(), name='vote-poll'),
+    path('api/polls/<int:poll_id>/results/', PollResultsView.as_view(), name='poll-results'),
+    #path('api/polls/', PollView.as_view(), name='polls'),
+    path('api/polls/<int:poll_id>/', DeletePollView.as_view(), name='delete-poll'),
+
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     # Обслуживание Vue.js приложения
     re_path(r'^$', TemplateView.as_view(template_name='index.html')),
     re_path(r'^(?!api/).*$', TemplateView.as_view(template_name='index.html')),
+
+    path('api/admin/users/', UserListView.as_view(), name='admin-user-list'),
+    path('api/admin/users/<int:user_id>/', UserDeleteView.as_view(), name='admin-user-delete'),
+    path('api/admin/users/<int:user_id>/ban/', UserBanView.as_view(), name='admin-user-ban'),
+    
+    path('api/admin/groups/', GroupListView.as_view(), name='admin-group-list'),
+    path('api/admin/groups/<int:group_id>/', GroupEditView.as_view(), name='admin-group-edit'),
+    path('api/admin/groups/<int:group_id>/', GroupDeleteView.as_view(), name='admin-group-delete'),
+    
+    path('api/admin/sessions/<int:user_id>/', UserSessionDeleteView.as_view(), name='admin-user-sessions-delete'),
+    #path('api/admin/reset-password/<int:user_id>/', ResetPasswordView.as_view(), name='admin-reset-password'),
 ]
 
