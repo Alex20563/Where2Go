@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, re_path
 from django.views.generic import TemplateView
 from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView
-from Where2go.views.user_views import GetMeView, UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
+from Where2go.views.user_views import UserSearchView, GetMeView, UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
 from Where2go.views.group_views import ListUserGroupsView, CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
 from Where2go.views.poll_views import CreatePollView, PollListView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
@@ -53,7 +53,8 @@ urlpatterns = [
     path('api/users/<int:id>/', UserDetailView.as_view(), name='user-detail'),
     path('api/users/<int:user_id>/delete/', UserDeleteView.as_view(), name='user-delete'),
     path('api/users/<int:user_id>/friends/', UserFriendsView.as_view(), name='user-friends'),
-    
+    path('api/users/search/', UserSearchView.as_view(), name="user-search"),
+
     path('api/groups/create', CreateGroupView.as_view(), name='create-group'),
     path('api/join-group/<int:group_id>/', JoinGroupView.as_view(), name='join-group'),
     path('api/leave-group/<int:group_id>/', LeaveGroupView.as_view(), name='leave-group'),

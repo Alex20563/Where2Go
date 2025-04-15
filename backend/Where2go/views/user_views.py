@@ -1,3 +1,4 @@
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.shortcuts import render
 from rest_framework.authtoken.models import Token
 from rest_framework import status
@@ -151,3 +152,34 @@ class GetMeView(APIView):
             "username": user.username,
             "email": user.email,
         })
+
+
+class UserSearchView(APIView):
+    """Полнотекстовый поиск пользователей"""
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Полнотекстовый поиск пользователей по username и email",
+        manual_parameters=[],
+        responses={200: UserListSerializer(many=True)}
+    )
+    def get(self, request):
+        query = request.query_params.get("q", "").strip()
+
+        if not query:
+            return Response([])
+
+        search_vector = SearchVector("username", "email", config="simple")
+        search_query = SearchQuery(query, config="simple")
+
+        users = (
+            CustomUser.objects
+            .annotate(rank=SearchRank(search_vector, search_query))
+            .filter(rank__gte=0.01)  # Может надо убрать, потому что из-за фильтрации может быть нулевой результат
+            .exclude(id=request.user.id)
+            .order_by("-rank")
+            [:20]
+        )
+
+        serializer = UserListSerializer(users, many=True)
+        return Response(serializer.data)
