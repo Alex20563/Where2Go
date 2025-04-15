@@ -20,7 +20,6 @@ const ManageGroup = () => {
     });
 
     const handleAddPoll = () => {
-        // Передаем props напрямую в компонент CreatePoll
         navigate("/create-poll", {
             state: {
                 groupId: group.id,

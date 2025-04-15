@@ -62,10 +62,14 @@ const CreateGroup = () => {
             return;
         }
 
+        if (selectedUsers.length <= 0){
+            setError("Выберите хотя бы одного участника группы.");
+            return;
+        }
         try {
-            const response = await API.post("/groups/create/", {
+            const response = await API.post("/groups/create", {
                 name: groupName,
-                users: selectedUsers.map(u => u.id),
+                members: selectedUsers.map(u => u.id),
             });
 
             if (response.status === 201 || response.status === 200) {
