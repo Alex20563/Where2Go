@@ -86,11 +86,6 @@ const Profile = () => {
                         ))}
                     </ul>
                 )}
-                <ul className="list-group">
-                    {user.groups.slice(0, 3).map(group => (
-                        <li key={group.id} className="list-group-item">{group.name}</li>
-                    ))}
-                </ul>
 
                 <h2 className="mt-4">Доступные опросы</h2>
                 <div style={{

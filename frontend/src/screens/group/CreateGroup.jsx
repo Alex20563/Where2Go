@@ -79,6 +79,7 @@ const CreateGroup = () => {
                 setSearchResults([]);
                 setSearchTerm("");
             }
+            setTimeout(() => navigate("/groups"), 1000);
         } catch (err) {
             console.error("Ошибка создания группы:", err);
             setError("Не удалось создать группу.");
