@@ -12,6 +12,7 @@ const ManageGroup = () => {
     const [user, setUser] = useState(null);
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [polls, setPolls] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -31,6 +32,9 @@ const ManageGroup = () => {
 
                 setGroup(foundGroup);
 
+                const pollsData = await API.get(`/groups/${foundGroup.id.toString()}/polls/`);
+                setPolls(Array.isArray(pollsData.data) ? pollsData.data : []);
+
                 const membersData = await Promise.all(
                     foundGroup.members.map(memberId =>
                         API.get(`/users/${memberId}/`).then(res => res.data)
@@ -40,7 +44,7 @@ const ManageGroup = () => {
 
             } catch (error) {
                 console.error("Ошибка при загрузке данных:", error);
-                navigate("/login");
+                navigate("/profile");
             } finally {
                 setLoading(false);
             }
@@ -99,7 +103,7 @@ const ManageGroup = () => {
                 <h4 className="mt-4">Опросы в группе</h4>
                 <ListGroup>
                     {/*TODO: получение опросов*/}
-                    {group.polls?.map(poll => (
+                    {polls?.map(poll => (
                         <ListGroup.Item key={poll.id}>
                             {poll.question}
                         </ListGroup.Item>
