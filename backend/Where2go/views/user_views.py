@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import update_session_auth_hash
 from rest_framework import generics
+
+from ..management.captcha import verify_captcha
 from ..models import CustomUser
 from ..serializers import UserSerializer, UserListSerializer, UserDetailSerializer
 from rest_framework.authentication import TokenAuthentication
@@ -21,32 +23,30 @@ class UserCreate(generics.CreateAPIView):
 
     @swagger_auto_schema(
         operation_description="Создание нового пользователя",
-        request_body=UserSerializer,
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['username', 'email', 'password', 'captcha'],
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(type=openapi.TYPE_STRING),
+                'password': openapi.Schema(type=openapi.TYPE_STRING),
+                'captcha': openapi.Schema(type=openapi.TYPE_STRING, description='reCAPTCHA токен')
+            }
+        ),
         responses={
-            201: openapi.Response(
-                description="Пользователь успешно создан",
-                schema=UserSerializer
-            ),
-            400: openapi.Response(
-                description="Неверные входные данные",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'error': openapi.Schema(type=openapi.TYPE_STRING)
-                    }
-                )
-            )
+            201: openapi.Response(description="Пользователь успешно создан", schema=UserSerializer),
+            400: openapi.Response(description="Неверные входные данные"),
         },
     )
     def post(self, request, *args, **kwargs):
+        captcha_token = request.data.get('captcha')
+        if not verify_captcha(captcha_token):
+            return Response({'error': 'Проверка капчи не пройдена'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            response = super().post(request, *args, **kwargs)
-            return response
+            return super().post(request, *args, **kwargs)
         except Exception:
-            return Response(
-                {'error': 'Ошибка при создании пользователя'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Ошибка при создании пользователя'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UpdateUserView(APIView):

@@ -4,6 +4,7 @@ import "../../../../styles/Login.css";
 import API from "../../../../api";
 import React, {useState} from "react";
 import {Alert} from 'react-bootstrap';
+import CaptchaField from "../../components/CaptchaField";
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -11,6 +12,7 @@ function Login() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const navigate = useNavigate();
+    const [captchaToken, setCaptchaToken] = useState(null);
 
     const validatePassword = (password) => {
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
@@ -30,7 +32,8 @@ function Login() {
         try {
             const response = await API.post("/auth/login-2fa", {
                 username: username,
-                password: password
+                password: password,
+                captcha: captchaToken
             });
 
             if (response.status === 200) {
@@ -79,8 +82,8 @@ function Login() {
                                onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
-
-                    <button type="submit" className="btn btn-primary w-100">
+                    <CaptchaField onChange={(token) => setCaptchaToken(token)} />
+                    <button type="submit" className="btn btn-primary w-100" disabled={!captchaToken}>
                         Войти
                     </button>
                 </form>

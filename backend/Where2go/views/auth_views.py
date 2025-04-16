@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 import random
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from ..management.captcha import verify_captcha
 
 
 class LoginView(APIView):
@@ -78,13 +79,14 @@ class LoginView2FA(APIView):
             properties={
                 'username': openapi.Schema(type=openapi.TYPE_STRING, description='Имя пользователя'),
                 'password': openapi.Schema(type=openapi.TYPE_STRING, description='Пароль'),
-                'code': openapi.Schema(type=openapi.TYPE_STRING, description='Код 2FA (опционально)')
+                'code': openapi.Schema(type=openapi.TYPE_STRING, description='Код 2FA (опционально)'),
+                'captcha': openapi.Schema(type=openapi.TYPE_STRING, description='reCAPTCHA токен')
             }
         ),
         responses={
             200: openapi.Response('Успешная аутентификация', openapi.Schema(type=openapi.TYPE_OBJECT, properties={
                 'token': openapi.Schema(type=openapi.TYPE_STRING)})),
-            400: 'Неверный код 2FA',
+            400: 'Неверный код 2FA / Ошибка капчи',
             401: 'Неверные учетные данные'
         }
     )
@@ -92,11 +94,15 @@ class LoginView2FA(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
         code = request.data.get('code')  # Получаем код 2FA из запроса
-        user = authenticate(username=username, password=password)
+        captcha = request.data.get('captcha')
 
+        user = authenticate(username=username, password=password)
         if user is not None:
             # Если код 2FA не был предоставлен, генерируем и отправляем его
             if code is None:
+                if not verify_captcha(captcha):
+                    return Response({'error': 'Проверка капчи не пройдена'}, status=status.HTTP_400_BAD_REQUEST)
+
                 verification_code = random.randint(100000, 999999)
                 user.verification_code = verification_code  # Сохраняем код в модели пользователя
                 user.save()

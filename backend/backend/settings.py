@@ -167,6 +167,8 @@ AUTH_USER_MODEL = 'Where2go.CustomUser'
 
 CORS_ALLOW_CREDENTIALS = True
 
+RECAPTCHA_SECRET_KEY = '6LfM3xorAAAAABYE759jGQ4qDuuQJstQly5V4SX2'
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.com'  # Замените на ваш SMTP сервер
 EMAIL_PORT = 587  # Обычно 587 для TLS
