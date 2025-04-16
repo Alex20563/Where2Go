@@ -7,7 +7,6 @@ import API from "../../api";
 const ManageGroup = () => {
     const navigate = useNavigate();
     const { groupId } = useParams();
-
     const [group, setGroup] = useState(null);
     const [user, setUser] = useState(null);
     const [members, setMembers] = useState([]);
@@ -32,7 +31,10 @@ const ManageGroup = () => {
 
                 setGroup(foundGroup);
 
-                const pollsData = await API.get(`/groups/${foundGroup.id.toString()}/polls/`);
+                //const pollsData = await API.get(`/groups/${foundGroup.id.toString()}/polls/`);
+                const pollsData =
+                        [{ id: 1, question: "Где встретимся?", authorId: 1, hasVoted: false },
+                    { id: 2, question: "Какой фильм смотрим?", authorId: 2, hasVoted: true }];
                 setPolls(Array.isArray(pollsData.data) ? pollsData.data : []);
 
                 const membersData = await Promise.all(

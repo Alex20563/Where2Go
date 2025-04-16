@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Col, Container, Row, Spinner } from "react-bootstrap";
+import {Button, Card, Col, Container, Modal, Row, Spinner} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
@@ -9,6 +9,10 @@ const AllGroups = () => {
     const [groups, setGroups] = useState([]);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedGroup, setSelectedGroup] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const adminGroups = groups.filter(group => group.admin === user.id);
+    const memberGroups = groups.filter(group => group.admin !== user.id);
 
     useEffect(() => {
         const fetchGroups = async () => {
@@ -34,11 +38,52 @@ const AllGroups = () => {
         setTimeout(() => navigate("/login"), 1000);
     };
 
-    const renderGroupActions = (group) => (
-        <Button variant="primary" onClick={() => navigate(`/groups/${group.id}`)}>
-            Перейти
-        </Button>
-    );
+    const handleShowGroupInfo = async (group) => {
+        try {
+            const membersData = await Promise.all(
+                group.members.map(memberID =>
+                    API.get(`/users/${memberID}/`).then(res => res.data)
+                )
+            );
+
+            const adminUser = membersData.find(member => member.id === group.admin);
+
+            setSelectedGroup({
+                ...group,
+                memberUsers: membersData,
+                adminUser: adminUser,
+            });
+
+            setShowModal(true);
+        } catch (err) {
+            console.error("Ошибка при загрузке данных о группе:", err);
+        }
+    };
+
+
+    const handleCloseModal = () => {
+        setSelectedGroup(null);
+        setShowModal(false);
+    };
+
+    const renderGroupActions =  (group) => {
+        const isAdmin = user && user.id === group.admin;
+
+        if (isAdmin) {
+            return (
+                <Button variant="primary" onClick={() => navigate(`/groups/${group.id}`)}>
+                    Перейти
+                </Button>
+            );
+        }
+
+        return (
+            <Button variant="info" onClick={() => handleShowGroupInfo(group)}>
+                Информация о группе
+            </Button>
+        );
+    };
+
 
     if (loading) {
         return (
@@ -49,9 +94,6 @@ const AllGroups = () => {
             </div>
         );
     }
-
-    const adminGroups = groups.filter(group => group.admin === user.id);
-    const memberGroups = groups.filter(group => group.admin !== user.id);
 
     return (
         <div>
@@ -72,7 +114,7 @@ const AllGroups = () => {
                             {adminGroups.map(group => (
                                 <Col md={6} key={group.id}>
                                     <Card className="mb-3">
-                                        <Card.Body>
+                                        <Card.Body className="d-flex align-items-center justify-content-between">
                                             <Card.Title>{group.name}</Card.Title>
                                             {renderGroupActions(group)}
                                         </Card.Body>
@@ -105,6 +147,29 @@ const AllGroups = () => {
                     <p>Вы пока не состоите ни в одной группе.</p>
                 )}
             </Container>
+            <Modal show={showModal} onHide={handleCloseModal}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Информация о группе</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {selectedGroup && (
+                        <>
+                            <p><strong>Название:</strong> {selectedGroup.name}</p>
+                            <p>
+                                <strong>Админ:</strong>{" "}
+                                {selectedGroup.adminUser ? `${selectedGroup.adminUser.username}` : selectedGroup.admin}
+                            </p>
+                            <p><strong>Участники:</strong></p>
+                            <ul>
+                                {selectedGroup.memberUsers?.map((member) => (
+                                    <li key={member.id}>{member.username}</li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </Modal.Body>
+
+            </Modal>
         </div>
     );
 };

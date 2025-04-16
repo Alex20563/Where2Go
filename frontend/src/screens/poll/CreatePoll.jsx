@@ -16,13 +16,18 @@ const CreatePoll = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [options, setOptions] = useState([{ text: "" }, { text: "" }]);
+    const [groups, setGroups] = useState([]);
+    const adminGroups = groups.filter(group => group.admin === user.id);
 
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
                 const userRes = await API.get("/auth/me");
+                const groupsRes = await API.get("/groups/");
+
                 setUser(userRes.data);
+                setGroups(Array.isArray(groupsRes.data) ? groupsRes.data : []);
             } catch (error) {
                 console.error("Ошибка при загрузке пользователя:", error);
                 navigate("/login");
@@ -114,12 +119,15 @@ const CreatePoll = () => {
                             onChange={(e) => setGroupId(e.target.value)}
                         >
                             <option value="">Выберите группу</option>
-                            {/* Эти данные лучше подгружать с API */}
-                            <option value="1">Друзья</option>
-                            <option value="2">Работа</option>
+                            {adminGroups.map(group => (
+                                <option key={group.id} value={group.id}>
+                                    {group.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
                 )}
+
                 <div className="mb-3">
                     <label className="form-label">Варианты ответа</label>
                     {options.map((opt, index) => (

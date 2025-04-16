@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {Container, Button, Spinner} from "react-bootstrap";
 import "../../styles/Profile.css";
 import NavigationBar from "../../components/NavigationBar";
@@ -82,7 +82,9 @@ const Profile = () => {
                 ) : (
                     <ul className="list-group">
                         {user.groups.slice(0, 3).map(group => (
-                            <li key={group.id} className="list-group-item">{group.name}</li>
+                            <li key={group.id} className="list-group-item">
+                                {group.name}
+                            </li>
                         ))}
                     </ul>
                 )}
