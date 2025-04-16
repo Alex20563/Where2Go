@@ -17,10 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 from django.views.generic import TemplateView
-from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView
-from Where2go.views.user_views import UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
+from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView, ActivateUserView
+from Where2go.views.user_views import UserCreate, UpdateUserView, UserListView, UserDetailView, UserFriendsView
 from Where2go.views.group_views import CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
-from Where2go.views.poll_views import CreatePollView, PollListView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
+from Where2go.views.poll_views import CreatePollView, PollListView, PollDetailView, ClosePollView, VotePollView, PollResultsView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
 
 from rest_framework import permissions
@@ -42,15 +42,15 @@ schema_view = get_schema_view(
 #LoginView,  UserCreate
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/register', UserCreate.as_view(), name='register'),
+    path('api/auth/register/', UserCreate.as_view(), name='register'),
     path('api/auth/login-2fa', LoginView2FA.as_view(), name='login-2fa'),
     path('api/auth/generate-2fa-secret', Generate2FASecretView.as_view(), name='generate-2fa-secret'),
     path('api/auth/login', LoginView.as_view(), name='login'),
+    path('api/auth/activate/', ActivateUserView.as_view(), name='activate-user'),
     
     path('api/users/update/', UpdateUserView.as_view(), name='update-user'),
     path('api/users/list', UserListView.as_view(), name='user-list'),
     path('api/users/<int:id>/', UserDetailView.as_view(), name='user-detail'),
-    path('api/users/<int:user_id>/delete/', UserDeleteView.as_view(), name='user-delete'),
     path('api/users/<int:user_id>/friends/', UserFriendsView.as_view(), name='user-friends'),
     
     path('api/groups/create', CreateGroupView.as_view(), name='create-group'),
@@ -65,11 +65,11 @@ urlpatterns = [
     path('api/groups/<int:group_id>/polls/', PollListView.as_view(), name='poll-list'),
     path('api/groups/<int:group_id>/polls/create/', CreatePollView.as_view(), name='create-poll'),
     path('api/polls/<int:id>/', PollDetailView.as_view(), name='poll-detail'),
-    path('api/polls/<int:poll_id>/close/', ClosePollView.as_view(), name='close-poll'),
-    path('api/polls/<int:poll_id>/vote/', VotePollView.as_view(), name='vote-poll'),
-    path('api/polls/<int:poll_id>/results/', PollResultsView.as_view(), name='poll-results'),
+    path('api/polls/<int:id>/close/', ClosePollView.as_view(), name='close-poll'),
+    path('api/polls/<int:id>/vote/', VotePollView.as_view(), name='vote-poll'),
+    path('api/polls/<int:id>/results/', PollResultsView.as_view(), name='poll-results'),
     #path('api/polls/', PollView.as_view(), name='polls'),
-    path('api/polls/<int:poll_id>/', DeletePollView.as_view(), name='delete-poll'),
+    #path('api/polls/<int:poll_id>/', DeletePollView.as_view(), name='delete-poll'),
 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
@@ -83,7 +83,7 @@ urlpatterns = [
     
     path('api/admin/groups/', GroupListView.as_view(), name='admin-group-list'),
     path('api/admin/groups/<int:group_id>/', GroupEditView.as_view(), name='admin-group-edit'),
-    path('api/admin/groups/<int:group_id>/', GroupDeleteView.as_view(), name='admin-group-delete'),
+    path('api/admin/groups/<int:group_id>/delete/', GroupDeleteView.as_view(), name='admin-group-delete'),
     
     path('api/admin/sessions/<int:user_id>/', UserSessionDeleteView.as_view(), name='admin-user-sessions-delete'),
     #path('api/admin/reset-password/<int:user_id>/', ResetPasswordView.as_view(), name='admin-reset-password'),

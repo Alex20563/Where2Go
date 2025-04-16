@@ -16,6 +16,9 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
+from django.utils.crypto import get_random_string
+from rest_framework.test import APIClient
+from django.test import TestCase
 
 class UserCreate(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -41,14 +44,25 @@ class UserCreate(generics.CreateAPIView):
         },
     )
     def post(self, request, *args, **kwargs):
-        try:
-            response = super().post(request, *args, **kwargs)
-            return response
-        except Exception as e:
-            return Response(
-                {'error': 'Ошибка при создании пользователя'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save(is_active=False)  # Создаем неактивного пользователя
+
+        # Генерация кода подтверждения
+        confirmation_code = get_random_string(length=6)
+        user.verification_code = confirmation_code
+        user.save()
+
+        # Отправка кода на почту
+        send_mail(
+            'Код подтверждения',
+            f'Ваш код подтверждения: {confirmation_code}',
+            'where2go-verification@yandex.ru',
+            [user.email],
+            fail_silently=False,
+        )
+
+        return Response({'message': 'Пользователь создан. Проверьте вашу почту для подтверждения.'}, status=status.HTTP_201_CREATED)
 
 class UpdateUserView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -107,19 +121,6 @@ class UserDetailView(RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
-class UserDeleteView(DestroyAPIView):
-    """Удаление пользователя"""
-    queryset = CustomUser.objects.all()
-    permission_classes = [IsAdminUser]
-    lookup_field = 'id'
-
-    @swagger_auto_schema(
-        operation_description="Удалить пользователя",
-        responses={204: "Пользователь успешно удален"}
-    )
-    def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
-
 class UserFriendsView(APIView):
     """Получение списка друзей пользователя"""
     permission_classes = [IsAuthenticated]
@@ -132,4 +133,5 @@ class UserFriendsView(APIView):
         user = get_object_or_404(CustomUser, id=user_id)
         friends = user.friends.all()
         serializer = UserListSerializer(friends, many=True)
-        return Response(serializer.data) 
+        return Response(serializer.data)
+

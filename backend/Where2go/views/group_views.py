@@ -129,7 +129,7 @@ class GroupView(APIView):
                 send_mail(
                     'Приглашение в группу',
                     f'Вы были добавлены в группу: {group.name}. Ссылка на группу: http://localhost:8000/groups/{group.id}/',
-                    'from@example.com',
+                    'where2go-verification@yandex.ru',
                     [member.email],
                     fail_silently=False,
                 )
