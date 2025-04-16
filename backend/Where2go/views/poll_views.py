@@ -141,6 +141,7 @@ class PollListView(ListAPIView):
     serializer_class = PollSerializer
     permission_classes = [IsAuthenticated]
 
+
     @swagger_auto_schema(
         operation_description="Получение списка всех опросов в группе",
         manual_parameters=[
