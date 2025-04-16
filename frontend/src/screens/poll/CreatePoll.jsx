@@ -1,25 +1,53 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Button, Alert } from "react-bootstrap";
 import NavigationBar from "../../components/NavigationBar";
+import { useLocation, useNavigate } from "react-router-dom";
+import API from "../../api";
 
-const CreatePoll = (props) => {
+const CreatePoll = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { groupId: initialGroupId, groupName } = location.state || {};
+
     const [question, setQuestion] = useState("");
-    const [groupId, setGroupId] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [groupId, setGroupId] = useState(initialGroupId || "");
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [options, setOptions] = useState([{ text: "" }, { text: "" }]);
+    const [groups, setGroups] = useState([]);
+    const adminGroups = groups.filter(group => group.admin === user.id);
 
-    const { groupId: initialGroupId } = props;
 
     useEffect(() => {
-        setGroupId(initialGroupId || "");
-    }, [initialGroupId]);
+        const fetchUser = async () => {
+            try {
+                const userRes = await API.get("/auth/me");
+                const groupsRes = await API.get("/groups/");
 
-    // TODO: заменить на реальные данные пользователя и групп
-    const user = { username: "User123", email: "user@example.com" };
-    const availableGroups = [
-        { id: 1, name: "Друзья" },
-        { id: 2, name: "Работа" },
-    ];
+                setUser(userRes.data);
+                setGroups(Array.isArray(groupsRes.data) ? groupsRes.data : []);
+            } catch (error) {
+                console.error("Ошибка при загрузке пользователя:", error);
+                navigate("/login");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUser();
+    }, [navigate]);
+
+    const handleOptionChange = (index, value) => {
+        const newOptions = [...options];
+        newOptions[index].text = value;
+        setOptions(newOptions);
+    };
+
+    const addOptionField = () => {
+        setOptions([...options, { text: "" }]);
+    };
 
     const handleSubmit = async () => {
         setError("");
@@ -35,20 +63,39 @@ const CreatePoll = (props) => {
             return;
         }
 
-        // TODO: заменить на реальный запрос
-        // const response = await axios.post('/api/polls/', { question, options, groupId });
-        console.log("Создание опроса:", { question, groupId });
-        setSuccess("Опрос успешно создан!");
-        setQuestion("");
-        setGroupId("");
+        const filledOptions = options.filter(opt => opt.text.trim() !== "");
+
+        if (filledOptions.length < 2) {
+            setError("Добавьте минимум два варианта ответа.");
+            return;
+        }
+
+        try {
+            await API.post(`/groups/${groupId}/polls/create/`, {
+                question: question.trim(),
+                options: filledOptions,
+            });
+
+            setSuccess("Опрос успешно создан!");
+            setQuestion("");
+            setOptions([{ text: "" }, { text: "" }]);
+            setGroupId(initialGroupId || "");
+
+        } catch (err) {
+            console.error("Ошибка при создании опроса:", err);
+            setError("Ошибка при создании опроса. Проверьте данные или права доступа.");
+        }
     };
+
+    if (loading) return null;
 
     return (
         <div className="create-poll-container" style={{ color: "#2a6ebb", marginBottom: "20px" }}>
             <NavigationBar user={user} handleLogout={() => console.log("logout")} />
 
             <Container className="mt-4">
-                <h2>Создание опроса</h2>
+                <h2>Создание опроса {groupName && `для группы: ${groupName}`}</h2>
+
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}
 
@@ -63,16 +110,43 @@ const CreatePoll = (props) => {
                     />
                 </div>
 
+                {!initialGroupId && (
+                    <div className="mb-3">
+                        <label className="form-label">Группа</label>
+                        <select
+                            className="form-select"
+                            value={groupId}
+                            onChange={(e) => setGroupId(e.target.value)}
+                        >
+                            <option value="">Выберите группу</option>
+                            {adminGroups.map(group => (
+                                <option key={group.id} value={group.id}>
+                                    {group.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
                 <div className="mb-3">
-                    <label className="form-label">Группа</label>
-                    <select className="form-select" value={groupId} onChange={(e) => setGroupId(e.target.value)}>
-                        <option value="">Выберите группу</option>
-                        {availableGroups.map(group => (
-                            <option key={group.id} value={group.id}>{group.name}</option>
-                        ))}
-                    </select>
+                    <label className="form-label">Варианты ответа</label>
+                    {options.map((opt, index) => (
+                        <input
+                            key={index}
+                            type="text"
+                            className="form-control mb-2"
+                            placeholder={`Вариант ${index + 1}`}
+                            value={opt.text}
+                            onChange={(e) => handleOptionChange(index, e.target.value)}
+                        />
+                    ))}
+                    <Button variant="secondary" size="sm" onClick={addOptionField}>
+                        Добавить вариант
+                    </Button>
                 </div>
-                <Button variant="primary" onClick={handleSubmit}>Создать опрос</Button>
+                <Button variant="primary" onClick={handleSubmit}>
+                    Создать опрос
+                </Button>
             </Container>
         </div>
     );

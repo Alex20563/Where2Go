@@ -10,6 +10,7 @@ import CreatePoll from "./screens/poll/CreatePoll";
 import AllGroups from "./screens/group/AllGroups";
 import ManageGroup from "./screens/group/ManageGroup";
 import AllPolls from "./screens/poll/AllPools";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
     return (
@@ -18,15 +19,14 @@ function App() {
                 <Route path="/" element={<Home/>}/>
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/register" element={<Register/>}/>
-
-                {/* TODO: защитить от перехода на страницы без авторизации */}
-                <Route path="/profile" element={<Profile/>}/>
                 <Route path="/2fa" element={<TwoFactorAuth/>}/>
-                <Route path="/create-group" element={<CreateGroup/>}/>
-                <Route path="/create-poll" element={<CreatePoll/>}/>
-                <Route path="/groups" element={<AllGroups/>}/>
-                <Route path="/groups/:groupId" element={<ManageGroup/>}/>
-                <Route path="/polls" element={<AllPolls/>}/>
+                {/* Защита от перехода на страницы без авторизации */}
+                <Route path="/profile" element={<PrivateRoute><Profile/></PrivateRoute>}/>
+                <Route path="/create-group" element={<PrivateRoute><CreateGroup/></PrivateRoute>}/>
+                <Route path="/create-poll" element={<PrivateRoute><CreatePoll/></PrivateRoute>}/>
+                <Route path="/groups" element={<PrivateRoute><AllGroups/></PrivateRoute>}/>
+                <Route path="/groups/:groupId" element={<PrivateRoute><ManageGroup/></PrivateRoute>}/>
+                <Route path="/polls" element={<PrivateRoute><AllPolls/></PrivateRoute>}/>
             </Routes>
         </Router>
     );

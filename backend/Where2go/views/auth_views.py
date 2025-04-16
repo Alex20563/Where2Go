@@ -1,23 +1,19 @@
-from django.shortcuts import render
-from rest_framework.authtoken.models import Token
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate, update_session_auth_hash
-import pyotp
-from rest_framework import generics
-from ..models import CustomUser, Group, Poll, PollOption
-from ..serializers import UserSerializer, GroupSerializer, UserListSerializer, UserDetailSerializer, PollSerializer
+from django.contrib.auth import authenticate
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.core.mail import send_mail
 import random
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
-from django.shortcuts import get_object_or_404
+
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+
     @swagger_auto_schema(
         operation_description="Аутентификация пользователя по email и паролю",
         request_body=openapi.Schema(
@@ -64,13 +60,16 @@ class LoginView(APIView):
                 'access': str(refresh.access_token),  # Access Token для авторизации
                 'refresh': str(refresh),  # Refresh Token для обновления
             }, status=status.HTTP_200_OK)
-        
+
         return Response(
             {'error': 'Неверный email или пароль'},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
+
 class LoginView2FA(APIView):
+    permission_classes = [AllowAny]
+
     @swagger_auto_schema(
         operation_description="Аутентификация пользователя",
         request_body=openapi.Schema(
@@ -83,7 +82,8 @@ class LoginView2FA(APIView):
             }
         ),
         responses={
-            200: openapi.Response('Успешная аутентификация', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'token': openapi.Schema(type=openapi.TYPE_STRING)})),
+            200: openapi.Response('Успешная аутентификация', openapi.Schema(type=openapi.TYPE_OBJECT, properties={
+                'token': openapi.Schema(type=openapi.TYPE_STRING)})),
             400: 'Неверный код 2FA',
             401: 'Неверные учетные данные'
         }
@@ -109,12 +109,12 @@ class LoginView2FA(APIView):
                     fail_silently=False,
                 )
                 return Response({'message': 'Код 2FA отправлен на вашу почту.'}, status=status.HTTP_200_OK)
-            
+
             # Проверка кода 2FA
             if str(user.verification_code) == str(code):
                 user.verification_code = None  # Сброс кода после успешной проверки
                 user.save()
-                
+
                 # Получение или создание токена
                 token, created = Token.objects.get_or_create(user=user)
                 return Response({
@@ -123,13 +123,14 @@ class LoginView2FA(APIView):
                 }, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Неверный код 2FA.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         return Response({'error': 'Неверные учетные данные.'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 class Generate2FASecretView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    
+
     @swagger_auto_schema(
         operation_description="Генерация кода 2FA",
         responses={
@@ -149,7 +150,7 @@ class Generate2FASecretView(APIView):
             send_mail(
                 'Ваш код двухфакторной аутентификации',
                 f'Ваш код: {verification_code}',
-                'where2go-verification@yandex.ru',  
+                'where2go-verification@yandex.ru',
                 [user.email],
                 fail_silently=False,
             )

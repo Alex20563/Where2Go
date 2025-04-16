@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, User
 from django.utils import timezone
 
+
 # Create your models here.
 
 class CustomUser(AbstractUser):
@@ -21,11 +22,12 @@ class CustomUser(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
+
 class Group(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название группы')
     admin = models.ForeignKey(
-        CustomUser, 
-        on_delete=models.CASCADE, 
+        CustomUser,
+        on_delete=models.CASCADE,
         related_name='admin_groups',
         verbose_name='Администратор'
     )
@@ -39,7 +41,7 @@ class Group(models.Model):
         verbose_name='Дата создания'
     )
     description = models.TextField(
-        blank=True, 
+        blank=True,
         null=True,
         verbose_name='Описание'
     )
@@ -52,6 +54,7 @@ class Group(models.Model):
         verbose_name_plural = 'Группы'
         ordering = ['-created_at']
 
+
 class PollOption(models.Model):
     text = models.CharField(max_length=200, verbose_name='Вариант ответа')
     votes = models.IntegerField(default=0, verbose_name='Количество голосов')
@@ -63,15 +66,18 @@ class PollOption(models.Model):
         verbose_name = 'Вариант ответа'
         verbose_name_plural = 'Варианты ответов'
 
+
 class Poll(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='polls', verbose_name='Группа')
-    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_polls', verbose_name='Создатель')
+    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_polls',
+                                verbose_name='Создатель')
     question = models.CharField(max_length=255, verbose_name='Вопрос')
     options = models.ManyToManyField(PollOption, related_name='polls', verbose_name='Варианты ответов')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     end_time = models.DateTimeField(verbose_name='Время окончания', null=True, blank=True)
     is_active = models.BooleanField(default=True, verbose_name='Активен')
-    voted_users = models.ManyToManyField(CustomUser, related_name='voted_polls', blank=True, verbose_name='Проголосовавшие')
+    voted_users = models.ManyToManyField(CustomUser, related_name='voted_polls', blank=True,
+                                         verbose_name='Проголосовавшие')
 
     @property
     def is_expired(self):

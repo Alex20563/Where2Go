@@ -3,7 +3,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../../../../styles/Login.css";
 import React, {useState} from "react";
 import {Alert} from "react-bootstrap";
-import axios from "axios";
 import API from "../../../../api";
 
 function Register() {
@@ -53,7 +52,7 @@ function Register() {
         }
 
         try {
-            const response = await API.post("/register/", {
+            const response = await API.post("/auth/register", {
                 username,
                 email,
                 password
@@ -61,7 +60,7 @@ function Register() {
 
             if (response.status === 201) {
                 setSuccess("Вы успешно зарегистрированы! Перенаправление...");
-                setTimeout(() => navigate("/2fa"), 1500);
+                setTimeout(() => navigate("/login"), 1500);
             }
         } catch (err) {
             if (err.response) {

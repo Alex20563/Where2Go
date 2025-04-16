@@ -1,17 +1,13 @@
-from django.shortcuts import render
-from rest_framework.authtoken.models import Token
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate, update_session_auth_hash
-import pyotp
+from django.contrib.auth import update_session_auth_hash
 from rest_framework import generics
-from ..models import CustomUser, Group, Poll, PollOption
-from ..serializers import UserSerializer, GroupSerializer, UserListSerializer, UserDetailSerializer, PollSerializer
+from ..models import CustomUser
+from ..serializers import UserSerializer, UserListSerializer, UserDetailSerializer
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from django.core.mail import send_mail
-import random
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
@@ -20,9 +16,11 @@ from django.utils.crypto import get_random_string
 from rest_framework.test import APIClient
 from django.test import TestCase
 
+
 class UserCreate(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
     @swagger_auto_schema(
         operation_description="Создание нового пользователя",
@@ -64,6 +62,7 @@ class UserCreate(generics.CreateAPIView):
 
         return Response({'message': 'Пользователь создан. Проверьте вашу почту для подтверждения.'}, status=status.HTTP_201_CREATED)
 
+
 class UpdateUserView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -94,6 +93,7 @@ class UpdateUserView(APIView):
 
         return Response({'message': 'Данные пользователя обновлены успешно.'}, status=status.HTTP_200_OK)
 
+
 class UserListView(ListAPIView):
     """Получение списка всех пользователей"""
     queryset = CustomUser.objects.all()
@@ -106,6 +106,7 @@ class UserListView(ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
 
 class UserDetailView(RetrieveAPIView):
     """Получение информации о конкретном пользователе"""
@@ -121,6 +122,21 @@ class UserDetailView(RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
+
+class UserDeleteView(DestroyAPIView):
+    """Удаление пользователя"""
+    queryset = CustomUser.objects.all()
+    permission_classes = [IsAdminUser]
+    lookup_field = 'id'
+
+    @swagger_auto_schema(
+        operation_description="Удалить пользователя",
+        responses={204: "Пользователь успешно удален"}
+    )
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+
 class UserFriendsView(APIView):
     """Получение списка друзей пользователя"""
     permission_classes = [IsAuthenticated]
@@ -135,3 +151,45 @@ class UserFriendsView(APIView):
         serializer = UserListSerializer(friends, many=True)
         return Response(serializer.data)
 
+
+class GetMeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        })
+
+
+class UserSearchView(APIView):
+    """Полнотекстовый поиск пользователей"""
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Полнотекстовый поиск пользователей по username и email",
+        manual_parameters=[],
+        responses={200: UserListSerializer(many=True)}
+    )
+    def get(self, request):
+        query = request.query_params.get("q", "").strip()
+
+        if not query:
+            return Response([])
+
+        search_vector = SearchVector("username", "email", config="simple")
+        search_query = SearchQuery(query, config="simple")
+
+        users = (
+            CustomUser.objects
+            .annotate(rank=SearchRank(search_vector, search_query))
+            .filter(rank__gte=0.01)  # Может надо убрать, потому что из-за фильтрации может быть нулевой результат
+            .exclude(id=request.user.id)
+            .order_by("-rank")
+            [:20]
+        )
+
+        serializer = UserListSerializer(users, many=True)
+        return Response(serializer.data)

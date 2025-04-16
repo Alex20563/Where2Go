@@ -18,9 +18,9 @@ from django.contrib import admin
 from django.urls import path, re_path
 from django.views.generic import TemplateView
 from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView, ActivateUserView
-from Where2go.views.user_views import UserCreate, UpdateUserView, UserListView, UserDetailView, UserFriendsView
-from Where2go.views.group_views import CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
-from Where2go.views.poll_views import CreatePollView, PollListView, PollDetailView, ClosePollView, VotePollView, PollResultsView
+from Where2go.views.user_views import UserSearchView, GetMeView, UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
+from Where2go.views.group_views import ListUserGroupsView, CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
+from Where2go.views.poll_views import CreatePollView, PollListView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
 
 from rest_framework import permissions
@@ -48,16 +48,19 @@ urlpatterns = [
     path('api/auth/login', LoginView.as_view(), name='login'),
     path('api/auth/activate/', ActivateUserView.as_view(), name='activate-user'),
     
+    path('api/auth/me', GetMeView.as_view(), name='get_me'),
+
     path('api/users/update/', UpdateUserView.as_view(), name='update-user'),
     path('api/users/list', UserListView.as_view(), name='user-list'),
     path('api/users/<int:id>/', UserDetailView.as_view(), name='user-detail'),
     path('api/users/<int:user_id>/friends/', UserFriendsView.as_view(), name='user-friends'),
-    
+    path('api/users/search/', UserSearchView.as_view(), name="user-search"),
+
     path('api/groups/create', CreateGroupView.as_view(), name='create-group'),
     path('api/join-group/<int:group_id>/', JoinGroupView.as_view(), name='join-group'),
     path('api/leave-group/<int:group_id>/', LeaveGroupView.as_view(), name='leave-group'),
     path('api/manage-group/<int:group_id>/', ManageGroupView.as_view(), name='manage-group'),
-    #path('api/groups/', GroupView.as_view(), name='group-list'),
+    path('api/groups/', ListUserGroupsView.as_view(), name='list-user-groups'),
     path('api/groups/<int:group_id>/add-member/', GroupMemberView.as_view(), name='add-member'),
     path('api/groups/<int:group_id>/remove-member/', GroupMemberView.as_view(), name='remove-member'),
     path('api/groups/<int:group_id>/', DeleteGroupView.as_view(), name='delete-group'),
