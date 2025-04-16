@@ -164,6 +164,19 @@ class PollListView(ListAPIView):
     def get_queryset(self):
         group_id = self.kwargs['group_id']  
         return Poll.objects.filter(group_id=group_id) 
+    
+class PollListAllView(ListAPIView):
+    serializer_class = PollSerializer
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Получение списка всех опросов",
+        responses={
+            200: PollSerializer(many=True),
+        }
+    )
+    def get_queryset(self):
+        return Poll.objects.all()
 
 class VotePollView(APIView):
     permission_classes = [IsAuthenticated]
