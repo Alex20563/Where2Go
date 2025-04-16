@@ -4,6 +4,7 @@ import "../../../../styles/Login.css";
 import React, {useState} from "react";
 import {Alert} from "react-bootstrap";
 import API from "../../../../api";
+import CaptchaField from "../../components/CaptchaField";
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -12,6 +13,7 @@ function Register() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [captchaToken, setCaptchaToken] = useState(null);
     const navigate = useNavigate();
 
     // Валидация email
@@ -55,7 +57,8 @@ function Register() {
             const response = await API.post("/auth/register", {
                 username,
                 email,
-                password
+                password,
+                captcha: captchaToken,
             });
 
             if (response.status === 201) {
@@ -119,8 +122,8 @@ function Register() {
                                onChange={(e) => setConfirmPassword(e.target.value)}
                         />
                     </div>
-
-                    <button type="submit" className="btn btn-primary w-100">
+                    <CaptchaField onChange={(token) => setCaptchaToken(token)} />
+                    <button type="submit" className="btn btn-primary w-100" disabled={!captchaToken}>
                         Зарегистрироваться
                     </button>
                 </form>
