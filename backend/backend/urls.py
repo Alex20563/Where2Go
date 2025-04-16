@@ -20,7 +20,7 @@ from django.views.generic import TemplateView
 from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView, ActivateUserView
 from Where2go.views.user_views import UserSearchView, GetMeView, UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
 from Where2go.views.group_views import ListUserGroupsView, CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
-from Where2go.views.poll_views import CreatePollView, PollListView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
+from Where2go.views.poll_views import CreatePollView, PollListView, PollListAllView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
 
 from rest_framework import permissions
@@ -71,6 +71,7 @@ urlpatterns = [
     path('api/polls/<int:id>/close/', ClosePollView.as_view(), name='close-poll'),
     path('api/polls/<int:id>/vote/', VotePollView.as_view(), name='vote-poll'),
     path('api/polls/<int:id>/results/', PollResultsView.as_view(), name='poll-results'),
+    path('api/polls/all/', PollListAllView.as_view(), name='poll-list-all'),
     #path('api/polls/', PollView.as_view(), name='polls'),
     #path('api/polls/<int:poll_id>/', DeletePollView.as_view(), name='delete-poll'),
 
