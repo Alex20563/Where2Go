@@ -1,18 +1,13 @@
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
-from django.shortcuts import render
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate, update_session_auth_hash
-import pyotp
+from django.contrib.auth import update_session_auth_hash
 from rest_framework import generics
-from ..models import CustomUser, Group, Poll, PollOption
-from ..serializers import UserSerializer, GroupSerializer, UserListSerializer, UserDetailSerializer, PollSerializer
+from ..models import CustomUser
+from ..serializers import UserSerializer, UserListSerializer, UserDetailSerializer
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from django.core.mail import send_mail
-import random
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
@@ -22,6 +17,7 @@ from django.shortcuts import get_object_or_404
 class UserCreate(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
     @swagger_auto_schema(
         operation_description="Создание нового пользователя",
@@ -46,7 +42,7 @@ class UserCreate(generics.CreateAPIView):
         try:
             response = super().post(request, *args, **kwargs)
             return response
-        except Exception as e:
+        except Exception:
             return Response(
                 {'error': 'Ошибка при создании пользователя'},
                 status=status.HTTP_400_BAD_REQUEST
