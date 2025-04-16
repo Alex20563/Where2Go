@@ -157,3 +157,28 @@ class Generate2FASecretView(APIView):
             return Response({'message': 'Код отправлен на вашу электронную почту.'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ActivateUserView(APIView):
+    @swagger_auto_schema(
+        operation_description="Активация пользователя по email и коду подтверждения",
+        responses={
+            200: 'Аккаунт активирован',
+            400: 'Неверный код подтверждения',
+            404: 'Пользователь не найден'
+        }
+    )
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('code')
+
+        try:
+            user = CustomUser.objects.get(email=email)
+            if user.verification_code == code:
+                user.is_active = True
+                user.verification_code = None
+                user.save()
+                return Response({'message': 'Аккаунт активирован!'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Неверный код подтверждения.'}, status=status.HTTP_400_BAD_REQUEST)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'Пользователь не найден.'}, status=status.HTTP_404_NOT_FOUND)

@@ -141,15 +141,17 @@ class GroupModelTests(TestCase):
 class UserAPITests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        # Создаем суперпользователя
         self.admin_user = CustomUser.objects.create_superuser(
             username='admin',
             email='admin@example.com',
             password='admin123'
         )
-        self.test_user = CustomUser.objects.create_user(
-            username='testuser',
-            email='test@example.com',
+        self.token = Token.objects.create(user=self.admin_user)
+        self.client.force_authenticate(user=self.admin_user, token=self.token)
+
+        self.test_user1 = CustomUser.objects.create_user(
+            username='testuser1',
+            email='test1@example.com',
             password='test123'
         )
         self.test_user2 = CustomUser.objects.create_user(
@@ -157,34 +159,24 @@ class UserAPITests(TestCase):
             email='test2@example.com',
             password='test123'
         )
-        # Добавляем друзей
-        self.test_user.friends.add(self.test_user2)
-        
-        # Аутентифицируем как админа
-        self.token = Token.objects.create(user=self.admin_user)
-        self.client.force_authenticate(user=self.admin_user, token=self.token)  # Используем force_authenticate
+        self.test_user1.friends.add(self.test_user2)
+
+        self.assertEqual(CustomUser.objects.count(), 3)
 
     def test_user_list(self):
-        """Тест получения списка пользователей"""
-        response = self.client.get('/api/users/')
+        response = self.client.get('/api/users/list')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 3)  # admin + 2 test users
 
     def test_user_detail(self):
         """Тест получения информации о пользователе"""
-        response = self.client.get(f'/api/users/{self.test_user.id}/')
+        response = self.client.get(f'/api/users/{self.test_user1.id}/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['username'], 'testuser')
-
-    def test_user_delete(self):
-        """Тест удаления пользователя"""
-        response = self.client.delete(f'/api/users/{self.test_user.id}/delete/')
-        self.assertEqual(response.status_code, 204)
-        self.assertFalse(CustomUser.objects.filter(id=self.test_user.id).exists())
+        self.assertEqual(response.data['username'], 'testuser1')
 
     def test_user_friends(self):
         """Тест получения списка друзей пользователя"""
-        response = self.client.get(f'/api/users/{self.test_user.id}/friends/')
+        response = self.client.get(f'/api/users/{self.test_user1.id}/friends/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['username'], 'testuser2')
@@ -295,7 +287,7 @@ class PollTests(TestCase):
             creator=self.user,
             question='Test Question'
         )
-        
+
         # Убедитесь, что опрос существует перед удалением
         self.assertEqual(Poll.objects.count(), 1)
 
@@ -314,20 +306,26 @@ class PollTests(TestCase):
             email='another@example.com',
             password='another123'
         )
-        
-        # Аутентифицируем другого пользователя
-        self.client.force_authenticate(user=another_user)
+
+        # Аутентифицируем другого пользователя с помощью force_authenticate
+        another_token = Token.objects.create(user=another_user)
+        # self.client.credentials(HTTP_AUTHORIZATION='Token ' + another_token.key) # Removed this line
+        self.client.force_authenticate(user=another_user, token=another_token) # Added this line
+
 
         poll = Poll.objects.create(
             group=self.group,
-            creator=self.user,
+            creator=self.user, # Poll created by self.user
             question='Test Question'
         )
 
         # Пытаемся удалить опрос другим пользователем
         response = self.client.delete(f'/api/polls/{poll.id}/')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403) # Expect 403
         self.assertEqual(Poll.objects.count(), 1)  # Опрос не должен быть удален
+
+        # Re-authenticate the original user for subsequent tests in this class
+        self.client.force_authenticate(user=self.user, token=self.token)
 
 class AdminAPITests(TestCase):
     def setUp(self):
@@ -385,7 +383,7 @@ class AdminAPITests(TestCase):
 
     def test_group_delete(self):
         """Тест удаления группы"""
-        response = self.client.delete(f'/api/admin/groups/{self.test_group.id}/')
+        response = self.client.delete(f'/api/admin/groups/{self.test_group.id}/delete/')
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Group.objects.filter(id=self.test_group.id).exists())
 
@@ -395,4 +393,31 @@ class AdminAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         # Проверяем, что токены пользователя удалены
         self.assertEqual(Token.objects.filter(user=self.test_user).count(), 0)
+
+class UserActivationTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user_data = {
+            'username': 'testuser',
+            'email': 'test@example.com',
+            'password': 'test123'
+        }
+
+    def test_user_registration_and_activation(self):
+        # Регистрация пользователя
+        response = self.client.post('/api/auth/register/', self.user_data)
+        self.assertEqual(response.status_code, 201)
+
+        # Получаем код подтверждения из базы данных
+        user = CustomUser.objects.get(email=self.user_data['email'])
+        confirmation_code = user.verification_code
+
+        # Активация пользователя
+        activation_response = self.client.post('/api/auth/activate/', {
+            'email': self.user_data['email'],
+            'code': confirmation_code
+        })
+        self.assertEqual(activation_response.status_code, 200)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
 

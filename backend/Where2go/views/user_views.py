@@ -12,6 +12,9 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
+from django.utils.crypto import get_random_string
+from rest_framework.test import APIClient
+from django.test import TestCase
 
 
 class UserCreate(generics.CreateAPIView):
@@ -39,14 +42,25 @@ class UserCreate(generics.CreateAPIView):
         },
     )
     def post(self, request, *args, **kwargs):
-        try:
-            response = super().post(request, *args, **kwargs)
-            return response
-        except Exception:
-            return Response(
-                {'error': 'Ошибка при создании пользователя'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save(is_active=False)  # Создаем неактивного пользователя
+
+        # Генерация кода подтверждения
+        confirmation_code = get_random_string(length=6)
+        user.verification_code = confirmation_code
+        user.save()
+
+        # Отправка кода на почту
+        send_mail(
+            'Код подтверждения',
+            f'Ваш код подтверждения: {confirmation_code}',
+            'where2go-verification@yandex.ru',
+            [user.email],
+            fail_silently=False,
+        )
+
+        return Response({'message': 'Пользователь создан. Проверьте вашу почту для подтверждения.'}, status=status.HTTP_201_CREATED)
 
 
 class UpdateUserView(APIView):

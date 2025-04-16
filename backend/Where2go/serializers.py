@@ -103,3 +103,7 @@ class PollSerializer(serializers.ModelSerializer):
             poll.options.add(option)
 
         return poll
+
+class ActivationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(max_length=6)

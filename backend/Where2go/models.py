@@ -7,7 +7,7 @@ from django.utils import timezone
 
 class CustomUser(AbstractUser):
     two_factor_secret = models.CharField(max_length=16, blank=True, null=True)
-    verification_code = models.IntegerField(blank=True, null=True)  # Поле для хранения кода 2FA
+    verification_code = models.CharField(max_length=10, blank=True, null=True)  # Поле для хранения кода 2FA
     friends = models.ManyToManyField(
         'self',
         symmetrical=True,
