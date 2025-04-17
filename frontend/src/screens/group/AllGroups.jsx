@@ -3,6 +3,7 @@ import {Button, Card, Col, Container, Modal, Row, Spinner} from "react-bootstrap
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
+import GroupInfoModal from "./components/GroupInfoModal";
 
 const AllGroups = () => {
     const navigate = useNavigate();
@@ -147,29 +148,13 @@ const AllGroups = () => {
                     <p>Вы пока не состоите ни в одной группе.</p>
                 )}
             </Container>
-            <Modal show={showModal} onHide={handleCloseModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Информация о группе</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {selectedGroup && (
-                        <>
-                            <p><strong>Название:</strong> {selectedGroup.name}</p>
-                            <p>
-                                <strong>Админ:</strong>{" "}
-                                {selectedGroup.adminUser ? `${selectedGroup.adminUser.username}` : selectedGroup.admin}
-                            </p>
-                            <p><strong>Участники:</strong></p>
-                            <ul>
-                                {selectedGroup.memberUsers?.map((member) => (
-                                    <li key={member.id}>{member.username}</li>
-                                ))}
-                            </ul>
-                        </>
-                    )}
-                </Modal.Body>
-
-            </Modal>
+            <GroupInfoModal
+                show={showModal}
+                handleClose={handleCloseModal}
+                group={selectedGroup}
+                error={null}
+                success={null}
+            />
         </div>
     );
 };

@@ -47,7 +47,7 @@ const AllPolls = () => {
         try {
             await API.delete(`/polls/${selectedPollId}/`);
             setSuccess("Опрос успешно удален.");
-            setPolls(polls.filter(p => p.id !== selectedPollId)); // обновление локального состояния
+            setPolls(polls.filter(p => p.id !== selectedPollId));
             setShowDeleteModal(false);
         } catch (err) {
             setError("Ошибка при удалении опроса.");
@@ -70,7 +70,7 @@ const AllPolls = () => {
 
     const handleSavePoll = async (id, updatedData) => {
         try {
-            //TODO: Запрос к API на обновление (можно через axios)
+            //TODO: Запрос к API на обновление
             // Обновить локальный список опросов
             // И закрыть модалку
             setShowModal(false);
