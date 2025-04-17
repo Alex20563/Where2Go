@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Button, Alert } from "react-bootstrap";
+import {Container, Button, Alert, Spinner} from "react-bootstrap";
 import NavigationBar from "../../components/NavigationBar";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../../api";
@@ -15,7 +15,6 @@ const CreatePoll = () => {
     const [groupId, setGroupId] = useState(initialGroupId || "");
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [options, setOptions] = useState([{ text: "" }, { text: "" }]);
     const [groups, setGroups] = useState([]);
     const adminGroups = groups.filter(group => group.admin === user.id);
 
@@ -39,16 +38,6 @@ const CreatePoll = () => {
         fetchUser();
     }, [navigate]);
 
-    const handleOptionChange = (index, value) => {
-        const newOptions = [...options];
-        newOptions[index].text = value;
-        setOptions(newOptions);
-    };
-
-    const addOptionField = () => {
-        setOptions([...options, { text: "" }]);
-    };
-
     const handleSubmit = async () => {
         setError("");
         setSuccess("");
@@ -63,23 +52,15 @@ const CreatePoll = () => {
             return;
         }
 
-        const filledOptions = options.filter(opt => opt.text.trim() !== "");
-
-        if (filledOptions.length < 2) {
-            setError("Добавьте минимум два варианта ответа.");
-            return;
-        }
-
         try {
             await API.post(`/groups/${groupId}/polls/create/`, {
                 question: question.trim(),
-                options: filledOptions,
+                //TODO: решить что с options
+                options: []
             });
 
             setSuccess("Опрос успешно создан!");
-            setQuestion("");
-            setOptions([{ text: "" }, { text: "" }]);
-            setGroupId(initialGroupId || "");
+            setTimeout(() => navigate("/polls"), 1000);
 
         } catch (err) {
             console.error("Ошибка при создании опроса:", err);
@@ -87,7 +68,15 @@ const CreatePoll = () => {
         }
     };
 
-    if (loading) return null;
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center mt-5">
+                <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Загрузка...</span>
+                </Spinner>
+            </div>
+        );
+    }
 
     return (
         <div className="create-poll-container" style={{ color: "#2a6ebb", marginBottom: "20px" }}>
@@ -127,23 +116,6 @@ const CreatePoll = () => {
                         </select>
                     </div>
                 )}
-
-                <div className="mb-3">
-                    <label className="form-label">Варианты ответа</label>
-                    {options.map((opt, index) => (
-                        <input
-                            key={index}
-                            type="text"
-                            className="form-control mb-2"
-                            placeholder={`Вариант ${index + 1}`}
-                            value={opt.text}
-                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                        />
-                    ))}
-                    <Button variant="secondary" size="sm" onClick={addOptionField}>
-                        Добавить вариант
-                    </Button>
-                </div>
                 <Button variant="primary" onClick={handleSubmit}>
                     Создать опрос
                 </Button>

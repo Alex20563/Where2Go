@@ -88,11 +88,12 @@ class PollSerializer(serializers.ModelSerializer):
     results = serializers.SerializerMethodField()
     is_expired = serializers.BooleanField(read_only=True)
     total_votes = serializers.IntegerField(read_only=True)
+    has_voted = serializers.SerializerMethodField()
 
     class Meta:
         model = Poll
         fields = ['id', 'group', 'creator', 'question', 'options', 'created_at', 'end_time', 'is_active', 'results',
-                  'is_expired', 'total_votes']
+                  'is_expired', 'total_votes', 'has_voted']
         read_only_fields = ['creator', 'created_at']
 
     def get_results(self, obj):
@@ -109,6 +110,13 @@ class PollSerializer(serializers.ModelSerializer):
             poll.options.add(option)
 
         return poll
+
+    def get_has_voted(self, obj):
+        """Проверка, голосовал ли текущий пользователь за опрос"""
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            return obj.voted_users.filter(id=user.id).exists()
+        return False
 
 class ActivationSerializer(serializers.Serializer):
     email = serializers.EmailField()

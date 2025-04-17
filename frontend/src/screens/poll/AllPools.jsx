@@ -1,44 +1,90 @@
-import React from "react";
-import { Container, Card, Button, Row, Col } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import {Container, Card, Button, Row, Col, Spinner} from "react-bootstrap";
 import NavigationBar from "../../components/NavigationBar";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import API from "../../api";
+import EditPollModal from "./components/EditPollModal";
+import DeletePollModal from "./components/DeletePollModal";
 
 const AllPolls = () => {
     const navigate = useNavigate();
-    const user = { id: 1, username: "User123", email: "user@example.com" };
+    const [polls, setPolls] = useState([]);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [editingPoll, setEditingPoll] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedPollId, setSelectedPollId] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
-    // Мок-данные
-    const activePolls = [
-        { id: 1, question: "Где встретимся?", authorId: 1, hasVoted: false },
-        { id: 2, question: "Какой фильм смотрим?", authorId: 2, hasVoted: true },
-    ];
+    const activePolls = polls.filter((poll) => poll.is_active);
+    const archivedPolls = polls.filter((poll) => !poll.is_active);
 
-    const archivedPolls = [
-        { id: 3, question: "Что ели в прошлый раз?", authorId: 1 },
-        { id: 4, question: "Как доехали?", authorId: 2 },
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const userRes = await API.get("/auth/me");
+                const pollsRes = await API.get("/polls/all/");
 
-    const handleVote = (pollId) => {
-        console.log(`Голосуем в опросе ${pollId}`);
-    };
+                setUser(userRes.data);
+                setPolls(pollsRes.data);
+            } catch (error) {
+                console.error("Ошибка при загрузке пользователя:", error);
+                navigate("/login");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const handleEdit = (pollId) => {
-        console.log(`Редактируем опрос ${pollId}`);
+        fetchData();
+    }, [navigate]);
+
+    //TODO: голосование в опросе
+    const handleVote = (pollId) => console.log(`Голосуем в опросе ${pollId}`);
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await API.delete(`/polls/${selectedPollId}/`);
+            setSuccess("Опрос успешно удален.");
+            setPolls(polls.filter(p => p.id !== selectedPollId)); // обновление локального состояния
+            setShowDeleteModal(false);
+        } catch (err) {
+            setError("Ошибка при удалении опроса.");
+        }
     };
 
     const handleDelete = (pollId) => {
-        console.log(`Удаляем опрос ${pollId}`);
+        setSelectedPollId(pollId);
+        setShowDeleteModal(true);
     };
 
-    const handleResults = (pollId) => {
-        console.log(`Смотрим результаты опроса ${pollId}`);
+    //TODO: резульаты опроса
+    const handleResults = (pollId) => console.log(`Смотрим результаты опроса ${pollId}`);
+
+    const handleEdit = (pollId) => {
+        const poll = activePolls.find(p => p.id === pollId);
+        setEditingPoll(poll);
+        setShowModal(true);
+    };
+
+    const handleSavePoll = async (id, updatedData) => {
+        try {
+            //TODO: Запрос к API на обновление (можно через axios)
+            // Обновить локальный список опросов
+            // И закрыть модалку
+            setShowModal(false);
+        } catch (err) {
+            console.error("Ошибка при обновлении:", err);
+        }
     };
 
     const renderPollActions = (poll) => {
-        const isAuthor = poll.authorId === user.id;
+        const isAuthor = poll.creator === user?.id;
+
         return (
             <div className="d-flex gap-2 mt-2">
-                {!poll.hasVoted && (
+                {poll.is_active && !poll.has_voted && (
                     <Button variant="primary" size="sm" onClick={() => handleVote(poll.id)}>
                         Голосовать
                     </Button>
@@ -60,14 +106,25 @@ const AllPolls = () => {
         );
     };
 
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center mt-5">
+                <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Загрузка...</span>
+                </Spinner>
+            </div>
+        );
+    }
+
+
     return (
         <div>
             <NavigationBar user={user} handleLogout={() => console.log("logout")} />
 
             <Container className="mt-4">
-                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <div className="d-flex justify-content-between align-items-center">
                     <h2>Доступные опросы</h2>
-                    <Button variant="outline-secondary" className="" onClick={() => navigate("/create-poll")}>
+                    <Button variant="outline-secondary" onClick={() => navigate("/create-poll")}>
                         Создать опрос
                     </Button>
                 </div>
@@ -95,7 +152,7 @@ const AllPolls = () => {
                                     <Button variant="info" size="sm" onClick={() => handleResults(poll.id)}>
                                         Результаты
                                     </Button>
-                                    {poll.authorId === user.id && (
+                                    {poll.creator === user?.id && (
                                         <Button
                                             variant="danger"
                                             size="sm"
@@ -111,6 +168,19 @@ const AllPolls = () => {
                     ))}
                 </Row>
             </Container>
+            <EditPollModal
+                show={showModal}
+                handleClose={() => setShowModal(false)}
+                poll={editingPoll}
+                onSave={handleSavePoll}
+            />
+            <DeletePollModal
+                show={showDeleteModal}
+                onHide={() => setShowDeleteModal(false)}
+                onConfirm={handleDeleteConfirm}
+                error={error}
+                success={success}
+            />
         </div>
     );
 };

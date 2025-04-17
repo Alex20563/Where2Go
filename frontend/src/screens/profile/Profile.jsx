@@ -23,14 +23,13 @@ const Profile = () => {
                 const groupsResponse = await API.get("/groups/");
                 const groupsData = Array.isArray(groupsResponse.data) ? groupsResponse.data : [];
 
+                const pollsResponse = await API.get("/polls/all/");
+                const pollsData = Array.isArray(pollsResponse.data) ? pollsResponse.data : [];
+
                 setUser({
                     ...userData,
                     groups: groupsData,
-                    polls: [
-                        // TODO
-                        { id: 101, question: "Пример вопроса 1" },
-                        { id: 102, question: "Пример вопроса 2" }
-                    ]
+                    polls: pollsData
                 });
             } catch (error) {
                 console.error(error);
@@ -103,11 +102,18 @@ const Profile = () => {
                         Все опросы
                     </Button>
                 </div>
-                <ul className="list-group">
-                    {user.polls.map(poll => (
-                        <li key={poll.id} className="list-group-item">{poll.question}</li>
-                    ))}
-                </ul>
+                {user.polls.length === 0 ? (
+                    <p>У вас пока нет ни одного опроса.</p>
+                ) : (
+                    <ul className="list-group">
+                        {user.polls.slice(0, 3).map(poll => (
+                            <li key={poll.id}
+                                className="list-group-item">
+                                {poll.question}
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </Container>
         </div>
     );
