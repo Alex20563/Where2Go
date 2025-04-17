@@ -20,7 +20,7 @@ from django.views.generic import TemplateView
 from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView, ActivateUserView
 from Where2go.views.user_views import UserSearchView, GetMeView, UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
 from Where2go.views.group_views import ListUserGroupsView, CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
-from Where2go.views.poll_views import CreatePollView, PollListView, PollListAllView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
+from Where2go.views.poll_views import CreatePollView, PollListView, PollListAllView, PollDetailView, ClosePollView, VotePollView, PollResultsView#, DeletePollView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
 
 from rest_framework import permissions

@@ -1,4 +1,7 @@
+import random
+
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.core.mail import send_mail
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -51,7 +54,7 @@ class UserCreate(generics.CreateAPIView):
         user = serializer.save(is_active=False)  # Создаем неактивного пользователя
 
         # Генерация кода подтверждения
-        confirmation_code = get_random_string(length=6)
+        confirmation_code = random.randint(100000, 999999)
         user.verification_code = confirmation_code
         user.save()
 

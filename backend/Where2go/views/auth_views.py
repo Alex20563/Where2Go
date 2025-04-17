@@ -10,6 +10,7 @@ import random
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from ..management.captcha import verify_captcha
+from ..models import CustomUser
 
 
 class LoginView(APIView):
@@ -164,7 +165,9 @@ class Generate2FASecretView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class ActivateUserView(APIView):
+    permission_classes = [AllowAny]
     @swagger_auto_schema(
         operation_description="Активация пользователя по email и коду подтверждения",
         responses={
