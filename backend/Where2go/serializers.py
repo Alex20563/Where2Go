@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
 from .models import CustomUser, Group, PollOption, Poll
 
 
@@ -15,6 +17,10 @@ class UserSerializer(serializers.ModelSerializer):
             'friends'
         ]
         extra_kwargs = {
+            'email': {
+                'validators': [UniqueValidator(queryset=CustomUser.objects.all(),
+                                               message="A user with that email already exists.")]
+            },
             'password': {'write_only': True},
             'friends': {'read_only': True},  # Друзей нельзя установить при создании
             'id': {'read_only': True}  # ID генерируется автоматически

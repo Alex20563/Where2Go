@@ -69,8 +69,21 @@ function Register() {
                 }), 1500);
             }
         } catch (err) {
-            if (err.response) {
-                setError("Ошибка при регистрации: " + (err.response.data.detail || "Попробуйте снова."));
+            if (err.response?.data) {
+                const data = err.response.data;
+
+                if (typeof data === "string") {
+                    setError("Ошибка при регистрации: " + data);
+                } else if (data.error) {
+                    setError("Ошибка при регистрации: " + data.error);
+                } else if (typeof data === "object") {
+                    const messages = Object.entries(data)
+                        .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+                        .join("\n");
+                    setError("Ошибка при регистрации:\n" + messages);
+                } else {
+                    setError("Ошибка при регистрации: Попробуйте снова.");
+                }
             } else {
                 setError("Ошибка сети. Проверьте соединение.");
             }
