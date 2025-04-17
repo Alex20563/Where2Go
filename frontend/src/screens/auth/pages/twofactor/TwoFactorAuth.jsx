@@ -12,8 +12,7 @@ function TwoFactorAuth() {
     const [success, setSuccess] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
-    const { username, password } = location.state || {};
-
+    const { username, password, isActivation, email } = location.state || {};
 
     const validateCode = (code) => {
         return /^\d{6}$/.test(code);
@@ -30,34 +29,45 @@ function TwoFactorAuth() {
         }
 
         try {
-            const response = await API.post("/auth/login-2fa", {
-                username: username,
-                password: password,
-                code: code
-            });
+            if (isActivation) {
+                const response = await API.post("/auth/activate/", {
+                    email: email,
+                    code: code,
+                });
 
-            if (response.status === 200) {
-                setSuccess("Код подтвержден! Вход выполнен.");
-                localStorage.setItem('token', response.data.token);
-                setTimeout(() => navigate("/profile"), 1500);
+                if (response.status === 200) {
+                    setSuccess("Аккаунт активирован! Перенаправление...");
+                    setTimeout(() => navigate("/login"), 2000);
+                }
+            } else {
+                const response = await API.post("/auth/login-2fa", {
+                    username,
+                    password,
+                    code,
+                });
+
+                if (response.status === 200) {
+                    setSuccess("Код подтвержден! Вход выполнен.");
+                    localStorage.setItem("token", response.data.token);
+                    setTimeout(() => navigate("/profile"), 1500);
+                }
             }
         } catch (error) {
             console.error("Ошибка запроса:", error);
-            if (error.response?.status === 400) {
-                setError("Неверный код. Проверьте почту.");
-            } else if (error.response?.status === 401) {
-                setError("Неверные email или пароль.");
-            } else {
-                setError("Ошибка подтверждения. Попробуйте позже.");
-            }
+            const message = error.response?.data?.error || "Ошибка подтверждения.";
+            setError(message);
         }
     };
 
     return (
         <div className="login-container d-flex align-items-center justify-content-center">
             <div className="login-box p-5 rounded shadow">
-                <h2 className="text-center mb-4 text-primary">Подтверждение входа</h2>
-                <p className="text-center text-muted">Введите код, отправленный на вашу почту</p>
+                <h2 className="text-center mb-4 text-primary">
+                    {isActivation ? "Активация аккаунта" : "Подтверждение входа"}
+                </h2>
+                <p className="text-center text-muted">
+                    Введите код, отправленный на вашу почту
+                </p>
 
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}

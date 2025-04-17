@@ -16,13 +16,11 @@ function Register() {
     const [captchaToken, setCaptchaToken] = useState(null);
     const navigate = useNavigate();
 
-    // Валидация email
     const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
 
-    // Валидация пароля
     const validatePassword = (password) => {
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
         return passwordRegex.test(password);
@@ -54,7 +52,7 @@ function Register() {
         }
 
         try {
-            const response = await API.post("/auth/register", {
+            const response = await API.post("/auth/register/", {
                 username,
                 email,
                 password,
@@ -63,7 +61,12 @@ function Register() {
 
             if (response.status === 201) {
                 setSuccess("Вы успешно зарегистрированы! Перенаправление...");
-                setTimeout(() => navigate("/login"), 1500);
+                setTimeout(() => navigate("/2fa", {
+                    state: {
+                        isActivation: true,
+                        email: email
+                    }
+                }), 1500);
             }
         } catch (err) {
             if (err.response) {
