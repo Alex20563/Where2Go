@@ -70,6 +70,8 @@ class UserCreate(generics.CreateAPIView):
         return Response({'message': 'Пользователь создан. Проверьте вашу почту для подтверждения.'}, status=status.HTTP_201_CREATED)
 
 
+from rest_framework.exceptions import ValidationError
+
 class UpdateUserView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -80,23 +82,32 @@ class UpdateUserView(APIView):
             type=openapi.TYPE_OBJECT,
             properties={
                 'username': openapi.Schema(type=openapi.TYPE_STRING, description='Новое имя пользователя'),
+                'old_password': openapi.Schema(type=openapi.TYPE_STRING, description='Текущий пароль'),
                 'password': openapi.Schema(type=openapi.TYPE_STRING, description='Новый пароль')
-            }
+            },
+            required=[],
         ),
         responses={200: 'Данные пользователя обновлены'}
     )
     def post(self, request):
         user = request.user
         new_username = request.data.get('username')
+        old_password = request.data.get('old_password')
         new_password = request.data.get('password')
 
         if new_username:
             user.username = new_username
+
         if new_password:
-            user.set_password(new_password)  # Устанавливаем новый пароль
+            if not old_password:
+                raise ValidationError({'old_password': 'Необходимо указать текущий пароль для смены.'})
+            if not user.check_password(old_password):
+                raise ValidationError({'old_password': 'Неверный текущий пароль.'})
+
+            user.set_password(new_password)
 
         user.save()
-        update_session_auth_hash(request, user)  # Обновляем сессию пользователя
+        update_session_auth_hash(request, user)
 
         return Response({'message': 'Данные пользователя обновлены успешно.'}, status=status.HTTP_200_OK)
 

@@ -1,24 +1,33 @@
-// NavigationBar.jsx
 import React, {useState} from "react";
-import {Navbar, Nav, Container, Button, Modal, Form} from "react-bootstrap";
+import {Navbar, Nav, Container, Button, Modal, Form, Alert} from "react-bootstrap";
 import icon from "../assets/icon.png";
+import API from "../api";
 
-const NavigationBar = ({ user, handleLogout }) => {
+const NavigationBar = ({user, handleLogout}) => {
     const [showSettings, setShowSettings] = React.useState(false);
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const handlePasswordChange = async () => {
         try {
             //TODO: смена пароля
-
-            // await API.post("/auth/change-password/", {
-            //     old_password: oldPassword,
-            //     new_password: newPassword
-            // });
-            console.log("Пароль успешно изменён");
-            setOldPassword('');
-            setNewPassword('');
+            const response = await API.post("/users/update/", {
+                username: user.username,
+                old_password: oldPassword,
+                password: newPassword
+            });
+            if (response.status === 200) {
+                setSuccess("Пароль успешно изменён.")
+                console.log("Пароль успешно изменён");
+                setOldPassword('');
+                setNewPassword('');
+            }
+            else {
+                setError("Ошибка при смене пароля.")
+                console.log(response)
+            }
         } catch (err) {
             console.log("Ошибка при смене пароля");
             console.error(err);
@@ -38,7 +47,7 @@ const NavigationBar = ({ user, handleLogout }) => {
 
     return (
         <>
-            <Navbar style={{ backgroundColor: "#79afe8" }} expand="lg">
+            <Navbar style={{backgroundColor: "#79afe8"}} expand="lg">
                 <Container>
                     <Navbar.Brand href="\profile">
                         <img
@@ -68,6 +77,8 @@ const NavigationBar = ({ user, handleLogout }) => {
                     <Modal.Title>Настройки безопасности</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    {error && <Alert variant="danger">{error}</Alert>}
+                    {success && <Alert variant="success">{success}</Alert>}
                     <Form>
                         <Form.Group className="mb-3" controlId="oldPassword">
                             <Form.Label>Текущий пароль</Form.Label>
@@ -94,7 +105,7 @@ const NavigationBar = ({ user, handleLogout }) => {
                         </Button>
                     </Form>
 
-                    <hr />
+                    <hr/>
 
                     {/* Деактивация всех сессий */}
                     <p className="mt-4">Хотите выйти из всех устройств?</p>
