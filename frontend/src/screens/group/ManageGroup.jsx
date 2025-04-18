@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from "react";
+import { Pencil } from "react-bootstrap-icons";
 import {Alert, Button, Container, ListGroup, Spinner} from "react-bootstrap";
 import NavigationBar from "../../components/NavigationBar";
 import {useNavigate, useParams} from "react-router-dom";
 import API from "../../api";
 import ConfirmModal from "./components/ConfirmModal";
+import RenameGroupModal from "./components/RenameGroupModal";
 
 const ManageGroup = () => {
     const navigate = useNavigate();
@@ -17,6 +19,7 @@ const ManageGroup = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+    const [showRenameModal, setShowRenameModal] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
@@ -70,6 +73,22 @@ const ManageGroup = () => {
         }
     };
 
+    const handleRenameGroup = async (newName, currentGroup) => {
+        try {
+            await API.post(`/manage-group/${groupId}/`, {
+                name: newName
+            });
+            currentGroup.name = newName;
+            setGroup(currentGroup);
+            setShowRenameModal(false);
+            setSuccess("Название группы обновлено.");
+        } catch (err) {
+            console.error("Ошибка при переименовании группы:", err);
+            setError("Не удалось переименовать группу.");
+        }
+    };
+
+
     const handleDeleteGroup = () => setShowDeleteModal(true);
 
     const handleDeleteConfirm = async () => {
@@ -107,7 +126,12 @@ const ManageGroup = () => {
                 {success && <Alert variant="success">{success}</Alert>}
 
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Управление группой: {group.name}</h2>
+                    <div className="d-flex align-items-center">
+                        <h2 className="me-2">Управление группой: {group.name}</h2>
+                        <Button variant="outline-secondary" size="sm" onClick={() => setShowRenameModal(true)}>
+                            <Pencil size={16} />
+                        </Button>
+                    </div>
                     <Button variant="danger" size="sm" onClick={handleDeleteGroup}>
                         Удалить группу
                     </Button>
@@ -161,6 +185,12 @@ const ManageGroup = () => {
                 onConfirm={handleConfirmDeleteUser}
                 title="Удаление участника"
                 body={`Вы уверены, что хотите удалить пользователя "${selectedUser?.username}" из группы? Это действие необратимо.`}
+            />
+            <RenameGroupModal
+                show={showRenameModal}
+                onHide={() => setShowRenameModal(false)}
+                currentGroup = {group}
+                onSave={handleRenameGroup}
             />
 
         </div>
