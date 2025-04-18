@@ -24,7 +24,6 @@ const CreatePoll = () => {
             try {
                 const userRes = await API.get("/auth/me");
                 const groupsRes = await API.get("/groups/");
-
                 setUser(userRes.data);
                 setGroups(Array.isArray(groupsRes.data) ? groupsRes.data : []);
             } catch (error) {
@@ -36,7 +35,7 @@ const CreatePoll = () => {
         };
 
         fetchUser();
-    }, [navigate]);
+    }, []);
 
     const handleSubmit = async () => {
         setError("");

@@ -32,7 +32,7 @@ const AllGroups = () => {
         };
 
         fetchGroups();
-    }, [navigate]);
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem("token");

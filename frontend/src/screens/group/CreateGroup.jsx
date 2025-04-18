@@ -29,7 +29,7 @@ const CreateGroup = () => {
         };
 
         fetchGroups();
-    }, [navigate]);
+    }, []);
 
     const handleSearch = async () => {
         if (!searchTerm.trim()) return;

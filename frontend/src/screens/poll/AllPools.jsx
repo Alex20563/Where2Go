@@ -36,9 +36,8 @@ const AllPolls = () => {
                 setLoading(false);
             }
         };
-
         fetchData();
-    }, [navigate]);
+    }, []);
 
     //TODO: голосование в опросе
     const handleVote = (pollId) => console.log(`Голосуем в опросе ${pollId}`);

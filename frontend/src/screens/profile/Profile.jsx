@@ -40,7 +40,7 @@ const Profile = () => {
         };
 
         fetchUserData();
-    }, [navigate]);
+    }, []);
 
     const handleLogout = () => {
         console.log("Выход из аккаунта...");

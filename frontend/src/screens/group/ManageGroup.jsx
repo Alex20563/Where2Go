@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { Alert, Button, Container, ListGroup, Spinner } from "react-bootstrap";
+import React, {useEffect, useState} from "react";
+import {Alert, Button, Container, ListGroup, Spinner} from "react-bootstrap";
 import NavigationBar from "../../components/NavigationBar";
-import { useNavigate, useParams } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import API from "../../api";
-import DeleteGroupModal from "./components/DeleteGroupModal";
+import ConfirmModal from "./components/ConfirmModal";
 
 const ManageGroup = () => {
     const navigate = useNavigate();
-    const { groupId } = useParams();
+    const {groupId} = useParams();
 
     const [group, setGroup] = useState(null);
     const [user, setUser] = useState(null);
@@ -15,6 +15,8 @@ const ManageGroup = () => {
     const [polls, setPolls] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
@@ -47,7 +49,26 @@ const ManageGroup = () => {
         };
 
         fetchData();
-    }, [groupId, navigate]);
+    }, [groupId]);
+
+    const handleUserDeleteClick = (user) => {
+        setSelectedUser(user);
+        console.log("Удаление пользователя: ", user);
+        setShowDeleteUserModal(true);
+    };
+
+    const handleConfirmDeleteUser = async () => {
+        try {
+            //TODO: удаление пользователя из группы
+
+            // await API.delete(`/groups/${groupId}/members/${selectedUser.id}/`);
+            // setMembers(prev => prev.filter(m => m.id !== selectedUser.id));
+            // setShowDeleteUserModal(false);
+            console.log("Удаление пользователя: ", selectedUser.username);
+        } catch (err) {
+            console.error("Ошибка при удалении пользователя:", err);
+        }
+    };
 
     const handleDeleteGroup = () => setShowDeleteModal(true);
 
@@ -80,7 +101,7 @@ const ManageGroup = () => {
 
     return (
         <div className="manage-group-container">
-            <NavigationBar user={user} handleLogout={handleLogout} />
+            <NavigationBar user={user} handleLogout={handleLogout}/>
             <Container className="mt-4">
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}
@@ -97,10 +118,11 @@ const ManageGroup = () => {
                     {members.map(m => (
                         <ListGroup.Item key={m.id} className="d-flex justify-content-between align-items-center">
                             <span>{m.username} ({m.email})</span>
-                            {/*TODO: удалить участника*/}
-                            <Button variant="danger" onClick={() => console.log("TODO: удалить участника")}>
-                                Удалить
-                            </Button>
+                            {m.id !== user.id &&
+                                <Button variant="danger" onClick={() => handleUserDeleteClick(m)}>
+                                    Удалить
+                                </Button>
+                            }
                         </ListGroup.Item>
                     ))}
                 </ListGroup>
@@ -116,7 +138,7 @@ const ManageGroup = () => {
 
                 <div className="d-flex justify-content-between mt-3">
                     <Button variant="success" onClick={() => navigate("/create-poll", {
-                        state: { groupId: group.id, groupName: group.name }
+                        state: {groupId: group.id, groupName: group.name}
                     })}>
                         Создать новый опрос
                     </Button>
@@ -126,12 +148,21 @@ const ManageGroup = () => {
                 </div>
             </Container>
 
-            <DeleteGroupModal
+            <ConfirmModal
                 show={showDeleteModal}
                 onHide={() => setShowDeleteModal(false)}
                 onConfirm={handleDeleteConfirm}
-                groupName={group.name}
+                title="Удаление группы"
+                body={`Вы уверены, что хотите удалить группу "${group.name}"? Это действие необратимо.`}
             />
+            <ConfirmModal
+                show={showDeleteUserModal}
+                onHide={() => setShowDeleteUserModal(false)}
+                onConfirm={handleConfirmDeleteUser}
+                title="Удаление участника"
+                body={`Вы уверены, что хотите удалить пользователя "${selectedUser?.username}" из группы? Это действие необратимо.`}
+            />
+
         </div>
     );
 };
