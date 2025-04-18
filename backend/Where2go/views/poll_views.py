@@ -61,7 +61,7 @@ class CreatePollView(APIView):
         data = request.data.copy()
         data['group'] = group_id
 
-        serializer = PollSerializer(data=data)
+        serializer = PollSerializer(data=data, context={'request': request})
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             

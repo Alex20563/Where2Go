@@ -102,8 +102,10 @@ class PollSerializer(serializers.ModelSerializer):
         return None
 
     def create(self, validated_data):
+        request = self.context.get('request')
         options_data = validated_data.pop('options')
-        poll = Poll.objects.create(**validated_data)
+        validated_data.pop('creator', None)
+        poll = Poll.objects.create(**validated_data, creator=request.user)
 
         for option_data in options_data:
             option = PollOption.objects.create(text=option_data['text'])
