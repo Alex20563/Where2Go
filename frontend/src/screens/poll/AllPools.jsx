@@ -40,7 +40,10 @@ const AllPolls = () => {
     }, []);
 
     //TODO: голосование в опросе
-    const handleVote = (pollId) => console.log(`Голосуем в опросе ${pollId}`);
+    const handleVote = (pollId) => {
+        console.log(`Голосуем в опросе ${pollId}`);
+        navigate(`/polls/${pollId}`);
+    }
 
     const handleDeleteConfirm = async () => {
         try {
@@ -114,11 +117,16 @@ const AllPolls = () => {
             </div>
         );
     }
+    const handleLogout = () => {
+        console.log("Выход из аккаунта...");
+        localStorage.removeItem("token");
+        setTimeout(() => navigate("/login"), 1500);
+    };
 
 
     return (
         <div>
-            <NavigationBar user={user} handleLogout={() => console.log("logout")} />
+            <NavigationBar user={user} handleLogout={handleLogout} />
 
             <Container className="mt-4">
                 <div className="d-flex justify-content-between align-items-center">

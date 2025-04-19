@@ -186,3 +186,19 @@ class ListUserGroupsView(APIView):
         groups = Group.objects.filter(members=user)
         serializer = GroupSerializer(groups, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class GroupDetailView(APIView):
+
+    @swagger_auto_schema(
+        operation_description="Получение информации о группе по ID",
+        responses={200: GroupSerializer()}
+    )
+    def get(self, request, group_id):
+        try:
+            group = Group.objects.get(id=group_id)
+        except Group.DoesNotExist:
+            return Response({"error": "Group not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = GroupSerializer(group)
+        return Response(serializer.data)

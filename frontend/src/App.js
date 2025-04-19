@@ -11,6 +11,7 @@ import AllGroups from "./screens/group/AllGroups";
 import ManageGroup from "./screens/group/ManageGroup";
 import AllPolls from "./screens/poll/AllPools";
 import PrivateRoute from "./components/PrivateRoute";
+import PollPage from "./screens/poll/PollPage";
 
 function App() {
     return (
@@ -27,6 +28,7 @@ function App() {
                 <Route path="/groups" element={<PrivateRoute><AllGroups/></PrivateRoute>}/>
                 <Route path="/groups/:groupId" element={<PrivateRoute><ManageGroup/></PrivateRoute>}/>
                 <Route path="/polls" element={<PrivateRoute><AllPolls/></PrivateRoute>}/>
+                <Route path="/polls/:pollId" element={<PrivateRoute><PollPage/></PrivateRoute>}/>
             </Routes>
         </Router>
     );
