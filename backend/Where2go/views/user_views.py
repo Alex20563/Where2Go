@@ -69,7 +69,6 @@ class UserCreate(generics.CreateAPIView):
                         status=status.HTTP_201_CREATED)
 
 
-
 class UpdateUserView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]

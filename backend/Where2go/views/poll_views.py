@@ -1,21 +1,14 @@
-from django.shortcuts import render
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import authenticate, update_session_auth_hash
-import pyotp
-from rest_framework import generics
-from ..models import CustomUser, Group, Poll, PollOption
-from ..serializers import UserSerializer, GroupSerializer, UserListSerializer, UserDetailSerializer, PollSerializer
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from django.core.mail import send_mail
-import random
+from ..models import Group, Poll
+from ..serializers import PollSerializer
+from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView, RetrieveDestroyAPIView
+from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView
 from django.shortcuts import get_object_or_404
+
 
 class CreatePollView(APIView):
     permission_classes = [IsAuthenticated]
@@ -54,8 +47,8 @@ class CreatePollView(APIView):
     def post(self, request, group_id):
         group = get_object_or_404(Group, id=group_id)
         if group.admin != request.user and request.user not in group.members.all():
-            return Response({'error': 'Вы не являетесь участником этой группы.'}, 
-                          status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Вы не являетесь участником этой группы.'},
+                            status=status.HTTP_403_FORBIDDEN)
 
         # Добавляем группу в данные запроса
         data = request.data.copy()
@@ -64,9 +57,10 @@ class CreatePollView(APIView):
         serializer = PollSerializer(data=data, context={'request': request})
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
+
         serializer.save(creator=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class PollDetailView(RetrieveDestroyAPIView):
     queryset = Poll.objects.all()
@@ -107,6 +101,7 @@ class PollDetailView(RetrieveDestroyAPIView):
             return Response({'error': 'У вас нет прав для удаления этого опроса.'}, status=status.HTTP_403_FORBIDDEN)
         return super().delete(request, *args, **kwargs)
 
+
 class ClosePollView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -131,16 +126,16 @@ class ClosePollView(APIView):
         poll = get_object_or_404(Poll, id=id)
         if poll.creator != request.user and poll.group.admin != request.user:
             return Response({'error': 'У вас нет прав для закрытия этого опроса.'},
-                          status=status.HTTP_403_FORBIDDEN)
+                            status=status.HTTP_403_FORBIDDEN)
 
         poll.is_active = False
         poll.save()
         return Response({'message': 'Опрос успешно закрыт.'}, status=status.HTTP_200_OK)
 
+
 class PollListView(ListAPIView):
     serializer_class = PollSerializer
     permission_classes = [IsAuthenticated]
-
 
     @swagger_auto_schema(
         operation_description="Получение списка всех опросов в группе",
@@ -158,13 +153,14 @@ class PollListView(ListAPIView):
             404: 'Группа не найдена'
         }
     )
-#    def get(self, request, *args, **kwargs):
-#        return super().get(request, *args, **kwargs)
-    
+    #    def get(self, request, *args, **kwargs):
+    #        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
-        group_id = self.kwargs['group_id']  
-        return Poll.objects.filter(group_id=group_id) 
-    
+        group_id = self.kwargs['group_id']
+        return Poll.objects.filter(group_id=group_id)
+
+
 class PollListAllView(ListAPIView):
     serializer_class = PollSerializer
     permission_classes = [IsAuthenticated]
@@ -177,6 +173,7 @@ class PollListAllView(ListAPIView):
     )
     def get_queryset(self):
         return Poll.objects.all()
+
 
 class VotePollView(APIView):
     permission_classes = [IsAuthenticated]
@@ -196,7 +193,7 @@ class VotePollView(APIView):
     )
     def post(self, request, id):
         poll = get_object_or_404(Poll, id=id)
-        
+
         # Проверки:
         if poll.is_expired:
             return Response({'error': 'Срок опроса истек'}, status=400)
@@ -214,9 +211,10 @@ class VotePollView(APIView):
             option = get_object_or_404(poll.options, id=option_id)
             option.votes += 1
             option.save()
-        
+
         poll.voted_users.add(request.user)
         return Response({'message': 'Голос учтён'}, status=200)
+
 
 class PollResultsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -231,13 +229,13 @@ class PollResultsView(APIView):
     )
     def get(self, request, id):
         poll = get_object_or_404(Poll, id=id)
-        
+
         # Проверяем права на просмотр результатов
-        if not (poll.is_expired or not poll.is_active or request.user == poll.creator 
+        if not (poll.is_expired or not poll.is_active or request.user == poll.creator
                 or request.user == poll.group.admin):
-            return Response({'error': 'Результаты будут доступны после завершения опроса.'}, 
-                          status=status.HTTP_403_FORBIDDEN)
-            
+            return Response({'error': 'Результаты будут доступны после завершения опроса.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
         # Формируем данные для ответа
         results_data = poll.get_results()
         return Response(results_data)
