@@ -22,6 +22,7 @@ from Where2go.views.user_views import UserSearchView, GetMeView, UserCreate, Upd
 from Where2go.views.group_views import ListUserGroupsView, CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
 from Where2go.views.poll_views import CreatePollView, PollListView, PollListAllView, PollDetailView, ClosePollView, VotePollView, PollResultsView, DeletePollView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
+from Where2go.views.map_views import NearbyPlacesView
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -91,5 +92,6 @@ urlpatterns = [
     
     path('api/admin/sessions/<int:user_id>/', UserSessionDeleteView.as_view(), name='admin-user-sessions-delete'),
     #path('api/admin/reset-password/<int:user_id>/', ResetPasswordView.as_view(), name='admin-reset-password'),
+    path('api/nearby-places/', NearbyPlacesView.as_view(), name='nearby-places'),
 ]
 
