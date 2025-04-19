@@ -12,7 +12,7 @@ function TwoFactorAuth() {
     const [success, setSuccess] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
-    const { username, password, isActivation, email } = location.state || {};
+    const {username, password, isActivation, email} = location.state || {};
 
     const validateCode = (code) => {
         return /^\d{6}$/.test(code);
@@ -49,7 +49,13 @@ function TwoFactorAuth() {
                 if (response.status === 200) {
                     setSuccess("Код подтвержден! Вход выполнен.");
                     localStorage.setItem("token", response.data.token);
-                    setTimeout(() => navigate("/profile"), 1500);
+                    const from = location.state?.from || "/";
+
+                    if (from === "/") {
+                        setTimeout(() => navigate("/profile", {state: from}), 1500);
+                    } else {
+                        navigate(from, {replace: true});
+                    }
                 }
             }
         } catch (error) {

@@ -27,8 +27,6 @@ const PollPage = () => {
     useEffect(() => {
         load2GIS()
             .then((loadedDG) => {
-                console.log("DG загружен", loadedDG);
-
                 if (window.DG) {
                     console.log("DG доступен:", window.DG);
                     loadedDG = window.DG;

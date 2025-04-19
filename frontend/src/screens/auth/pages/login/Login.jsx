@@ -1,4 +1,4 @@
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../../../styles/Login.css";
 import API from "../../../../api";
@@ -7,6 +7,7 @@ import {Alert} from 'react-bootstrap';
 import CaptchaField from "../../components/CaptchaField";
 
 function Login() {
+    const location = useLocation();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState("");
@@ -38,8 +39,10 @@ function Login() {
 
             if (response.status === 200) {
                 setSuccess("Вход успешен! Перенаправление...");
+                const from = location.state?.from || '/';
+
                 setTimeout(() => navigate("/2fa", {
-                    state: {username, password}
+                    state: {username, password, from }
                 }), 1500);
 
             }
