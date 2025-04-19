@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Navbar, Nav, Container, Button, Modal, Form, Alert} from "react-bootstrap";
 import icon from "../assets/icon.png";
 import API from "../api";
@@ -9,30 +9,69 @@ const NavigationBar = ({user, handleLogout}) => {
     const [newPassword, setNewPassword] = useState('');
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [newUsername, setNewUsername] = useState(user.username.toString());
+
+    useEffect(() => {
+        if (error || success) {
+            const timer = setTimeout(() => {
+                setError("");
+                setSuccess("");
+            }, 5000); // 5 секунд
+
+            return () => clearTimeout(timer);
+        }
+    }, [error, success]);
+
+    const showError = (msg) => {
+        setSuccess("");
+        setError(msg);
+    }
+
+    const showSuccess = (msg) => {
+        setError("");
+        setSuccess(msg);
+    }
+
+    const handleUsernameChange = async () => {
+        if (newUsername === user.username) {
+            showError("Новое имя пользователя совпадает с текущим.");
+            return;
+        }
+        try {
+            const response = await API.post("/users/update/", {
+                username: user.username,
+                newUsername: newUsername
+            });
+            if (response.status === 200) {
+                showSuccess("Имя пользователя успешно изменено.");
+                user.username = newUsername;
+                setNewUsername(newUsername);
+            } else {
+                showError(`Ошибка при смене имени пользователя: ${response.data.error}`);
+            }
+        } catch (err) {
+            showError(`Ошибка при смене имени пользователя: ${err.response?.data?.error || err.message}`);
+        }
+    }
 
     const handlePasswordChange = async () => {
         try {
-            //TODO: смена пароля
             const response = await API.post("/users/update/", {
                 username: user.username,
                 old_password: oldPassword,
                 password: newPassword
             });
             if (response.status === 200) {
-                setSuccess("Пароль успешно изменён.")
-                console.log("Пароль успешно изменён");
+                showSuccess("Пароль успешно изменён.");
                 setOldPassword('');
                 setNewPassword('');
-            }
-            else {
-                setError("Ошибка при смене пароля.")
-                console.log(response)
+            } else {
+                showError(`Ошибка при смене пароля: ${response.data.error}`);
             }
         } catch (err) {
-            console.log("Ошибка при смене пароля");
-            console.error(err);
+            showError(`Ошибка при смене пароля: ${err.response?.data?.error || err.message}`);
         }
-    };
+    }
 
     const handleDeactivateSessions = async () => {
         try {
@@ -79,8 +118,24 @@ const NavigationBar = ({user, handleLogout}) => {
                 <Modal.Body>
                     {error && <Alert variant="danger">{error}</Alert>}
                     {success && <Alert variant="success">{success}</Alert>}
+
                     <Form>
-                        <Form.Group className="mb-3" controlId="oldPassword">
+                        <Form.Group className="mb-3" controlId="newUsername">
+                            <Form.Label>Имя пользователя</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Введите новое имя пользователя"
+                                value={newUsername}
+                                onChange={(e) => setNewUsername(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Button variant="primary" onClick={handleUsernameChange} className="justify-content-center">
+                            Сменить имя пользователя
+                        </Button>
+
+                        <hr/>
+
+                        <Form.Group className="mb-3 mt-4" controlId="oldPassword">
                             <Form.Label>Текущий пароль</Form.Label>
                             <Form.Control
                                 type="password"
@@ -103,18 +158,17 @@ const NavigationBar = ({user, handleLogout}) => {
                         <Button variant="primary" onClick={handlePasswordChange} className="justify-content-center">
                             Сменить пароль
                         </Button>
+
+
+                        <hr/>
+
+                        <p className="mt-4">Хотите выйти из всех устройств?</p>
+                        <Button variant="danger" onClick={handleDeactivateSessions}>
+                            Завершить все сеансы
+                        </Button>
                     </Form>
-
-                    <hr/>
-
-                    {/* Деактивация всех сессий */}
-                    <p className="mt-4">Хотите выйти из всех устройств?</p>
-                    <Button variant="danger" onClick={handleDeactivateSessions}>
-                        Завершить все сеансы
-                    </Button>
                 </Modal.Body>
             </Modal>
-
         </>
     );
 };

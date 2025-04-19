@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import update_session_auth_hash
 from rest_framework import generics
 
+from django.db import IntegrityError
 from ..management.captcha import verify_captcha
 from ..models import CustomUser
 from ..serializers import UserSerializer, UserListSerializer, UserDetailSerializer
@@ -17,9 +18,6 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
-from django.utils.crypto import get_random_string
-from rest_framework.test import APIClient
-from django.test import TestCase
 
 
 class UserCreate(generics.CreateAPIView):
@@ -67,10 +65,10 @@ class UserCreate(generics.CreateAPIView):
             fail_silently=False,
         )
 
-        return Response({'message': 'Пользователь создан. Проверьте вашу почту для подтверждения.'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Пользователь создан. Проверьте вашу почту для подтверждения.'},
+                        status=status.HTTP_201_CREATED)
 
 
-from rest_framework.exceptions import ValidationError
 
 class UpdateUserView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -81,7 +79,7 @@ class UpdateUserView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Новое имя пользователя'),
+                'newUsername': openapi.Schema(type=openapi.TYPE_STRING, description='Новое имя пользователя'),
                 'old_password': openapi.Schema(type=openapi.TYPE_STRING, description='Текущий пароль'),
                 'password': openapi.Schema(type=openapi.TYPE_STRING, description='Новый пароль')
             },
@@ -91,22 +89,36 @@ class UpdateUserView(APIView):
     )
     def post(self, request):
         user = request.user
-        new_username = request.data.get('username')
+        new_username = request.data.get('newUsername')
         old_password = request.data.get('old_password')
         new_password = request.data.get('password')
+
+        if not new_username and not new_password:
+            return Response({'message': 'Нет данных для обновления.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_password:
+            if not old_password:
+                return Response({'error': 'Необходимо указать текущий пароль для смены.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if not user.check_password(old_password):
+                return Response({'error': 'Неверный текущий пароль.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(new_password)
 
         if new_username:
             user.username = new_username
 
-        if new_password:
-            if not old_password:
-                raise ValidationError({'old_password': 'Необходимо указать текущий пароль для смены.'})
-            if not user.check_password(old_password):
-                raise ValidationError({'old_password': 'Неверный текущий пароль.'})
+        try:
+            user.save()
+        except IntegrityError as e:
+            error_message = str(e)
+            if 'customuser_username_key' in error_message:
+                return Response({'error': 'Пользователь с таким именем уже существует.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'error': 'Ошибка сохранения данных пользователя.'},
+                                status=status.HTTP_400_BAD_REQUEST)
 
-            user.set_password(new_password)
-
-        user.save()
         update_session_auth_hash(request, user)
 
         return Response({'message': 'Данные пользователя обновлены успешно.'}, status=status.HTTP_200_OK)
