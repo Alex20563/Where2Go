@@ -78,6 +78,7 @@ class Poll(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='Активен')
     voted_users = models.ManyToManyField(CustomUser, related_name='voted_polls', blank=True,
                                          verbose_name='Проголосовавшие')
+    coordinates = models.JSONField(default=list, blank=True, verbose_name='Координаты')
 
     @property
     def is_expired(self):
@@ -103,6 +104,14 @@ class Poll(models.Model):
             'total_votes': total,
             'results': results
         }
+
+    def calculate_average_point(self):
+        if not self.coordinates:
+            return None
+        total_lat = sum(coord['lat'] for coord in self.coordinates)
+        total_lon = sum(coord['lon'] for coord in self.coordinates)
+        count = len(self.coordinates)
+        return {'lat': total_lat / count, 'lon': total_lon / count}
 
     def __str__(self):
         return f"{self.question} ({self.group.name})"
