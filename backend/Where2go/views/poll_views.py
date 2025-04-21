@@ -130,7 +130,11 @@ class ClosePollView(APIView):
 
         poll.is_active = False
         poll.save()
-        return Response({'message': 'Опрос успешно закрыт.'}, status=status.HTTP_200_OK)
+
+        # Вычисляем среднюю точку
+        average_point = poll.calculate_average_point()
+
+        return Response({'message': 'Опрос успешно закрыт.', 'average_point': average_point}, status=status.HTTP_200_OK)
 
 
 class PollListView(ListAPIView):
@@ -181,12 +185,20 @@ class VotePollView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['choices'],
+            required=['choices', 'coordinates'],
             properties={
                 'choices': openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Items(type=openapi.TYPE_INTEGER),
                     description='Список ID вариантов'
+                ),
+                'coordinates': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'lat': openapi.Schema(type=openapi.TYPE_NUMBER, description='Широта'),
+                        'lon': openapi.Schema(type=openapi.TYPE_NUMBER, description='Долгота')
+                    },
+                    description='Координаты пользователя'
                 )
             }
         )
@@ -206,6 +218,10 @@ class VotePollView(APIView):
         if not choices:
             return Response({'error': 'Не выбраны варианты'}, status=400)
 
+        coordinates = request.data.get('coordinates')
+        if not coordinates:
+            return Response({'error': 'Координаты не предоставлены'}, status=400)
+
         # Голосование:
         for option_id in choices:
             option = get_object_or_404(poll.options, id=option_id)
@@ -213,6 +229,11 @@ class VotePollView(APIView):
             option.save()
 
         poll.voted_users.add(request.user)
+
+        # Сохраняем координаты
+        poll.coordinates.append(coordinates)
+        poll.save()
+
         return Response({'message': 'Голос учтён'}, status=200)
 
 
