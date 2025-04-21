@@ -1,21 +1,25 @@
 # views.py
 from django.http import JsonResponse
-from django.views import View
 import requests
 from django.conf import settings
 import math
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework.views import APIView
 
-class NearbyPlacesView(View):
+
+class NearbyPlacesView(APIView):
     @swagger_auto_schema(
         operation_description="Получение ближайших мест по координатам.",
         manual_parameters=[
             openapi.Parameter('lat', openapi.IN_QUERY, description="Широта", type=openapi.TYPE_NUMBER, required=True),
             openapi.Parameter('lon', openapi.IN_QUERY, description="Долгота", type=openapi.TYPE_NUMBER, required=True),
-            openapi.Parameter('radius', openapi.IN_QUERY, description="Радиус поиска в метрах", type=openapi.TYPE_INTEGER, default=500),
-            openapi.Parameter('category', openapi.IN_QUERY, description="Категория мест", type=openapi.TYPE_STRING, default='кафе'),
-            openapi.Parameter('min_rating', openapi.IN_QUERY, description="Минимальный рейтинг", type=openapi.TYPE_NUMBER, default=4.0),
+            openapi.Parameter('radius', openapi.IN_QUERY, description="Радиус поиска в метрах",
+                              type=openapi.TYPE_INTEGER, default=500),
+            openapi.Parameter('category', openapi.IN_QUERY, description="Категория мест", type=openapi.TYPE_STRING,
+                              default='кафе'),
+            openapi.Parameter('min_rating', openapi.IN_QUERY, description="Минимальный рейтинг",
+                              type=openapi.TYPE_NUMBER, default=4.0),
         ],
         responses={
             200: openapi.Response(
@@ -85,7 +89,7 @@ class NearbyPlacesView(View):
 
     def _get_2gis_places(self, base_lat, base_lon, category, radius, min_rating):
         url = "https://catalog.api.2gis.com/3.0/items"
-        
+
         params = {
             'q': category,
             'point': f"{base_lon},{base_lat}",
@@ -94,24 +98,24 @@ class NearbyPlacesView(View):
             'fields': 'items.point,items.reviews,items.address',
             'key': settings.DGIS_API_KEY
         }
-        
+
         try:
             response = requests.get(url, params=params)
             response.raise_for_status()
             data = response.json()
-            
+
             results = []
             for item in data.get('result', {}).get('items', []):
                 rating = item.get('reviews', {}).get('rating', 0)
                 if rating >= min_rating:
                     place_lat = item['point']['lat']
                     place_lon = item['point']['lon']
-                    
+
                     # Рассчитываем расстояние от исходной точки
                     distance = self._calculate_distance(
                         base_lat, base_lon, place_lat, place_lon
                     )
-                    
+
                     results.append({
                         'name': item['name'],
                         'address': item.get('address_name'),
@@ -130,11 +134,11 @@ class NearbyPlacesView(View):
                                 'yandex', base_lat, base_lon, place_lat, place_lon)
                         }
                     })
-            
+
             # Сортируем по расстоянию
             results.sort(key=lambda x: x['distance'])
             return results
-        
+
         except requests.exceptions.RequestException as e:
             print(f"2GIS API error: {e}")
             return []
@@ -147,13 +151,13 @@ class NearbyPlacesView(View):
         delta_phi = math.radians(lat2 - lat1)
         delta_lambda = math.radians(lon2 - lon1)
 
-        a = (math.sin(delta_phi/2)**2 + 
+        a = (math.sin(delta_phi / 2) ** 2 +
              math.cos(phi1) * math.cos(phi2) *
-             math.sin(delta_lambda/2)**2)
+             math.sin(delta_lambda / 2) ** 2)
         return round(R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)))
 
     def _generate_2gis_link(self, lat, lon, name):
-        return (f"https://2gis.ru/maps?m={lon}%2C{lat}" 
+        return (f"https://2gis.ru/maps?m={lon}%2C{lat}"
                 f"&q={name.replace(' ', '%20')}")
 
     def _generate_direction_link(self, service, from_lat, from_lon, to_lat, to_lon):

@@ -6,6 +6,7 @@ import API from "../../api";
 import { load2GIS } from "../../utils/load2gis";
 
 //TODO: запрос на бэк
+//TODO: дополнить категории мест
 const mockPlaces = [
     { id: 1, name: "Кофейня" },
     { id: 2, name: "Парк" },

@@ -23,6 +23,7 @@ from Where2go.views.group_views import GroupDetailView, ListUserGroupsView, Crea
 from Where2go.views.poll_views import CreatePollView, PollListView, PollListAllView, PollDetailView, ClosePollView, VotePollView, PollResultsView#, DeletePollView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
 from Where2go.views.map_views import NearbyPlacesView
+from Where2go.views.categories_views import PlaceCategoriesView
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -48,7 +49,6 @@ urlpatterns = [
     path('api/auth/generate-2fa-secret', Generate2FASecretView.as_view(), name='generate-2fa-secret'),
     path('api/auth/login', LoginView.as_view(), name='login'),
     path('api/auth/activate/', ActivateUserView.as_view(), name='activate-user'),
-    
     path('api/auth/me', GetMeView.as_view(), name='get_me'),
 
     path('api/users/update/', UpdateUserView.as_view(), name='update-user'),
@@ -77,6 +77,10 @@ urlpatterns = [
     #path('api/polls/', PollView.as_view(), name='polls'),
     #path('api/polls/<int:poll_id>/', DeletePollView.as_view(), name='delete-poll'),
 
+    path('api/map/nearby-places/', NearbyPlacesView.as_view(), name='nearby-places'),
+    path('api/map/categories', PlaceCategoriesView.as_view(), name='categories'),
+
+
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     # Обслуживание Vue.js приложения
@@ -93,6 +97,6 @@ urlpatterns = [
     
     path('api/admin/sessions/<int:user_id>/', UserSessionDeleteView.as_view(), name='admin-user-sessions-delete'),
     #path('api/admin/reset-password/<int:user_id>/', ResetPasswordView.as_view(), name='admin-reset-password'),
-    path('api/nearby-places/', NearbyPlacesView.as_view(), name='nearby-places'),
+
 ]
 
