@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {Button, Card, Col, Container, Modal, Row, Spinner} from "react-bootstrap";
+import {Button, Card, Col, Container, Row, Spinner} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
@@ -133,7 +133,7 @@ const AllGroups = () => {
                             {memberGroups.map(group => (
                                 <Col md={6} key={group.id}>
                                     <Card className="mb-3 bg-light">
-                                        <Card.Body>
+                                        <Card.Body className="d-flex align-items-center justify-content-between">
                                             <Card.Title>{group.name}</Card.Title>
                                             {renderGroupActions(group)}
                                         </Card.Body>

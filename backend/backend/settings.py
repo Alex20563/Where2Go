@@ -146,7 +146,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -175,6 +176,7 @@ EMAIL_PORT = 587  # Обычно 587 для TLS
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'where2go-verification@yandex.ru'  #login fro mail where.2go
 EMAIL_HOST_PASSWORD = 'isywidndmwygtbut'  #пасс для почты
+
 
 # Настройки админ-панели
 JAZZMIN_SETTINGS = {
@@ -214,3 +216,5 @@ API для приложения Where2Go.
         }
     }
 }
+
+DGIS_API_KEY = os.environ['DGIS_API_KEY']

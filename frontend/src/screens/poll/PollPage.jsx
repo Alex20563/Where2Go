@@ -5,14 +5,6 @@ import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
 import { load2GIS } from "../../utils/load2gis";
 
-//TODO: запрос на бэк
-//TODO: дополнить категории мест
-const mockPlaces = [
-    { id: 1, name: "Кофейня" },
-    { id: 2, name: "Парк" },
-    { id: 3, name: "ТЦ" },
-];
-
 const PollPage = () => {
     const {pollId} = useParams();
     const navigate = useNavigate();
@@ -22,6 +14,7 @@ const PollPage = () => {
     const [user, setUser] = useState(null);
     const [poll, setPoll] = useState(null);
     const [group, setGroup] = useState(null);
+    const [places, setPlaces] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingMap, setLoadingMap] = useState(true);
 
@@ -73,12 +66,15 @@ const PollPage = () => {
             try {
                 const userRes = await API.get("/auth/me");
                 const pollRes = await API.get(`/polls/${pollId}`);
+                const placesRes = await API.get(`/map/categories`);
 
                 const groupId = pollRes.data.group;
                 const groupRes = await API.get(`/groups/${groupId}/detail/`);
+
                 setUser(userRes.data);
                 setPoll(pollRes.data);
                 setGroup(groupRes.data);
+                setPlaces(placesRes.data.categories);
 
             } catch (error) {
                 console.error("Ошибка при загрузке:", error);
@@ -92,6 +88,7 @@ const PollPage = () => {
     }, []);
 
     const handleSubmit = () => {
+
         console.log("Выбранные координаты:", selectedCoords);
         console.log("Выбранное место:", selectedPlace);
     };
@@ -134,14 +131,17 @@ const PollPage = () => {
                     onChange={(e) => setSelectedPlace(e.target.value)}
                     className="mb-3"
                 >
-                    <option value="">Выберите место из списка</option>
-                    {Array.isArray(mockPlaces) &&
-                        mockPlaces.map((place) => (
-                            <option key={place.id} value={place.name}>
-                                {place.name}
+                    <option value="" disabled hidden>
+                        Выберите место из списка
+                    </option>
+                    {Array.isArray(places) &&
+                        places.map((place) => (
+                            <option key={place} value={place}>
+                                {place}
                             </option>
                         ))}
                 </Form.Select>
+
 
                 <div className="d-flex justify-content-between">
                     <Button variant="secondary" onClick={() => navigate("/polls")}>

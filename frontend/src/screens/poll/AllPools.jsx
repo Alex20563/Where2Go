@@ -18,8 +18,10 @@ const AllPolls = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
 
-    const activePolls = polls.filter((poll) => poll.is_active);
-    const archivedPolls = polls.filter((poll) => !poll.is_active);
+    const now = new Date();
+
+    const activePolls = polls.filter((poll) => new Date(poll.end_time) >= now);
+    const archivedPolls = polls.filter((poll) => new Date(poll.end_time) < now);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -39,9 +41,7 @@ const AllPolls = () => {
         fetchData();
     }, []);
 
-    //TODO: голосование в опросе
     const handleVote = (pollId) => {
-        console.log(`Голосуем в опросе ${pollId}`);
         navigate(`/polls/${pollId}`);
     }
 
@@ -57,6 +57,8 @@ const AllPolls = () => {
     };
 
     const handleDelete = (pollId) => {
+        setError("");
+        setSuccess("");
         setSelectedPollId(pollId);
         setShowDeleteModal(true);
     };
@@ -65,6 +67,8 @@ const AllPolls = () => {
     const handleResults = (pollId) => console.log(`Смотрим результаты опроса ${pollId}`);
 
     const handleEdit = (pollId) => {
+        setError("");
+        setSuccess("");
         const poll = activePolls.find(p => p.id === pollId);
         setEditingPoll(poll);
         setShowModal(true);
@@ -72,14 +76,27 @@ const AllPolls = () => {
 
     const handleSavePoll = async (id, updatedData) => {
         try {
-            //TODO: Запрос к API на обновление
-            // Обновить локальный список опросов
-            // И закрыть модалку
+            const response = await API.patch(`/polls/${id}/update/`, {
+                question: updatedData.question,
+                end_time: updatedData.end_time,
+            });
+
+            if (response.status !== 200 ) {
+                setError("Ошибка при обновлении опроса.");
+            }
+
+            const updatedPoll = response.data;
+            setPolls(prevPolls =>
+                prevPolls.map(p => (p.id === id ? updatedPoll : p))
+            );
+
             setShowModal(false);
         } catch (err) {
+            setError(`Ошибка при обновлении: ${err}`)
             console.error("Ошибка при обновлении:", err);
         }
     };
+
 
     const renderPollActions = (poll) => {
         const isAuthor = poll.creator === user?.id;
@@ -180,6 +197,8 @@ const AllPolls = () => {
                 handleClose={() => setShowModal(false)}
                 poll={editingPoll}
                 onSave={handleSavePoll}
+                error={error}
+                success={success}
             />
             <DeletePollModal
                 show={showDeleteModal}

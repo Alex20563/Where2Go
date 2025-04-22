@@ -1,17 +1,16 @@
 import React, {useEffect, useState} from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import {Modal, Button, Form, Alert} from "react-bootstrap";
 
-const EditPollModal = ({ show, handleClose, poll, onSave }) => {
+const EditPollModal = ({ show, handleClose, poll, onSave, error, success }) => {
     const [question, setQuestion] = useState("");
     const [endTime, setEndTime] = useState("");
-    const [isActive, setIsActive] = useState(true);
 
     useEffect(() => {
         if (poll) {
             setQuestion(poll.question);
             setEndTime(poll.end_time || "");
-            setIsActive(poll.is_active);
         }
+
     }, [poll]);
 
     if (!poll) return null;
@@ -19,8 +18,7 @@ const EditPollModal = ({ show, handleClose, poll, onSave }) => {
     const handleSubmit = () => {
         const updatedData = {
             question,
-            end_time: endTime,
-            is_active: isActive
+            end_time: endTime
         };
         onSave(poll.id, updatedData);
     };
@@ -31,6 +29,8 @@ const EditPollModal = ({ show, handleClose, poll, onSave }) => {
                 <Modal.Title>Редактировать опрос</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+                {error && <Alert variant="danger">{error}</Alert>}
+                {success && <Alert variant="success">{success}</Alert>}
                 <Form>
                     <Form.Group className="mb-3">
                         <Form.Label>Вопрос</Form.Label>
@@ -46,14 +46,6 @@ const EditPollModal = ({ show, handleClose, poll, onSave }) => {
                             type="datetime-local"
                             value={endTime?.slice(0, 16)}
                             onChange={(e) => setEndTime(e.target.value)}
-                        />
-                    </Form.Group>
-                    <Form.Group className="mb-3">
-                        <Form.Check
-                            type="checkbox"
-                            label="Активен"
-                            checked={isActive}
-                            onChange={(e) => setIsActive(e.target.checked)}
                         />
                     </Form.Group>
                 </Form>

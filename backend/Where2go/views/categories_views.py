@@ -9,4 +9,4 @@ POPULAR_CATEGORIES = [
 
 class PlaceCategoriesView(APIView):
     def get(self, request):
-        return JsonResponse({'categories': POPULAR_CATEGORIES})
+        return JsonResponse({'categories': POPULAR_CATEGORIES}, json_dumps_params={'ensure_ascii': False})

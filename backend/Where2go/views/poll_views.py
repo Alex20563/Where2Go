@@ -6,7 +6,7 @@ from ..serializers import PollSerializer
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView
+from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView, UpdateAPIView
 from django.shortcuts import get_object_or_404
 
 
@@ -260,3 +260,27 @@ class PollResultsView(APIView):
         # Формируем данные для ответа
         results_data = poll.get_results()
         return Response(results_data)
+
+
+class PollUpdateView(UpdateAPIView):
+    queryset = Poll.objects.all()
+    serializer_class = PollSerializer
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Обновление вопроса или времени окончания опроса",
+        responses={
+            200: PollSerializer(),
+            403: 'Нет прав на редактирование опроса',
+            404: 'Опрос не найден',
+            400: 'Неверные данные'
+        }
+    )
+    def patch(self, request, *args, **kwargs):
+        poll = self.get_object()
+
+        if poll.creator != request.user:
+            return Response({'error': 'У вас недостаточно прав для обновления опроса.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        return super().patch(request, *args, **kwargs)
