@@ -5,14 +5,19 @@ import { useNavigate } from "react-router-dom";
 import API from "../../api";
 import EditPollModal from "./components/EditPollModal";
 import DeletePollModal from "./components/DeletePollModal";
+import ClosePollModal from "./components/ClosePollModal";
 
+
+//TODO: конфирм удаления и закрытия
 const AllPolls = () => {
     const navigate = useNavigate();
     const [polls, setPolls] = useState([]);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editingPoll, setEditingPoll] = useState(null);
-    const [showModal, setShowModal] = useState(false);
+    const [ShowEditModal, setShowEditModal] = useState(false);
+    const [closingPoll, setClosingPoll] = useState(null);
+    const [showCloseModal, setShowCloseModal] = useState(false);
     const [selectedPollId, setSelectedPollId] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [error, setError] = useState("");
@@ -20,8 +25,8 @@ const AllPolls = () => {
 
     const now = new Date();
 
-    const activePolls = polls.filter((poll) => new Date(poll.end_time) >= now);
-    const archivedPolls = polls.filter((poll) => new Date(poll.end_time) < now);
+    const activePolls = polls.filter((poll) => (new Date(poll.end_time) >= now) && poll.is_active);
+    const archivedPolls = polls.filter((poll) => (new Date(poll.end_time) < now) || !poll.is_active);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -63,7 +68,7 @@ const AllPolls = () => {
         setShowDeleteModal(true);
     };
 
-    //TODO: резульаты опроса
+    //TODO: результаты опроса
     const handleResults = (pollId) => console.log(`Смотрим результаты опроса ${pollId}`);
 
     const handleEdit = (pollId) => {
@@ -71,8 +76,28 @@ const AllPolls = () => {
         setSuccess("");
         const poll = activePolls.find(p => p.id === pollId);
         setEditingPoll(poll);
-        setShowModal(true);
+        setShowEditModal(true);
     };
+
+    const handleClose = (pollId) => {
+        setError("");
+        setSuccess("");
+        const poll = activePolls.find(p => p.id === pollId);
+        setClosingPoll(poll);
+        setShowCloseModal(true);
+    };
+
+    const handleCloseConfirm = async () => {
+        try {
+            await API.post(`/polls/${closingPoll.id}/close/`);
+            setSuccess("Опрос успешно закрыт.");
+            setPolls(polls.filter(p => p.id !== closingPoll));
+            setShowCloseModal(false);
+        } catch (err) {
+            setError("Ошибка при закрытии опроса.");
+            console.error(err);
+        }
+    }
 
     const handleSavePoll = async (id, updatedData) => {
         try {
@@ -90,7 +115,7 @@ const AllPolls = () => {
                 prevPolls.map(p => (p.id === id ? updatedPoll : p))
             );
 
-            setShowModal(false);
+            setShowEditModal(false);
         } catch (err) {
             setError(`Ошибка при обновлении: ${err}`)
             console.error("Ошибка при обновлении:", err);
@@ -118,6 +143,9 @@ const AllPolls = () => {
                         </Button>
                         <Button variant="danger" size="sm" onClick={() => handleDelete(poll.id)}>
                             Удалить
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => handleClose(poll.id)}>
+                            Закрыть
                         </Button>
                     </>
                 )}
@@ -193,8 +221,8 @@ const AllPolls = () => {
                 </Row>
             </Container>
             <EditPollModal
-                show={showModal}
-                handleClose={() => setShowModal(false)}
+                show={ShowEditModal}
+                onHide ={() => setShowEditModal(false)}
                 poll={editingPoll}
                 onSave={handleSavePoll}
                 error={error}
@@ -204,6 +232,13 @@ const AllPolls = () => {
                 show={showDeleteModal}
                 onHide={() => setShowDeleteModal(false)}
                 onConfirm={handleDeleteConfirm}
+                error={error}
+                success={success}
+            />
+            <ClosePollModal
+                show={showCloseModal}
+                onHide={() => setShowCloseModal(false)}
+                onConfirm={handleCloseConfirm}
                 error={error}
                 success={success}
             />

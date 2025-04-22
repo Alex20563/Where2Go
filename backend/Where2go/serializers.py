@@ -120,6 +120,7 @@ class PollSerializer(serializers.ModelSerializer):
             return obj.voted_users.filter(id=user.id).exists()
         return False
 
+
 class ActivationSerializer(serializers.Serializer):
     email = serializers.EmailField()
     code = serializers.CharField(max_length=6)
