@@ -42,12 +42,6 @@ const Profile = () => {
         fetchUserData();
     }, []);
 
-    const handleLogout = () => {
-        console.log("Выход из аккаунта...");
-        localStorage.removeItem("token");
-        setTimeout(() => navigate("/login"), 1500);
-    };
-
     if (loading) return (
         <div className="d-flex justify-content-center mt-5">
             <Spinner animation="border" role="status">
@@ -59,7 +53,7 @@ const Profile = () => {
 
     return (
         <div className="profile-container">
-            <NavigationBar user={user} handleLogout={handleLogout}/>
+            <NavigationBar user={user}/>
 
             <Container className="mt-4">
                 <h2>Мои группы</h2>

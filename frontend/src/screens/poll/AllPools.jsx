@@ -133,9 +133,6 @@ const AllPolls = () => {
                         Голосовать
                     </Button>
                 )}
-                <Button variant="info" size="sm" onClick={() => handleResults(poll.id)}>
-                    Результаты
-                </Button>
                 {isAuthor && (
                     <>
                         <Button variant="warning" size="sm" onClick={() => handleEdit(poll.id)}>
@@ -162,16 +159,10 @@ const AllPolls = () => {
             </div>
         );
     }
-    const handleLogout = () => {
-        console.log("Выход из аккаунта...");
-        localStorage.removeItem("token");
-        setTimeout(() => navigate("/login"), 1500);
-    };
-
 
     return (
         <div>
-            <NavigationBar user={user} handleLogout={handleLogout} />
+            <NavigationBar user={user}/>
 
             <Container className="mt-4">
                 <div className="d-flex justify-content-between align-items-center">
@@ -205,12 +196,7 @@ const AllPolls = () => {
                                         Результаты
                                     </Button>
                                     {poll.creator === user?.id && (
-                                        <Button
-                                            variant="danger"
-                                            size="sm"
-                                            className="ms-2"
-                                            onClick={() => handleDelete(poll.id)}
-                                        >
+                                        <Button variant="danger" size="sm" className="ms-2" onClick={() => handleDelete(poll.id)}>
                                             Удалить
                                         </Button>
                                     )}
@@ -220,6 +206,7 @@ const AllPolls = () => {
                     ))}
                 </Row>
             </Container>
+
             <EditPollModal
                 show={ShowEditModal}
                 onHide ={() => setShowEditModal(false)}

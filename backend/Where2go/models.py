@@ -80,6 +80,7 @@ class PollOption(models.Model):
 def default_end_time():
     return timezone.now() + timedelta(days=1)
 
+
 class Poll(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='polls', verbose_name='Группа')
     creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_polls',
@@ -87,7 +88,7 @@ class Poll(models.Model):
     question = models.CharField(max_length=255, verbose_name='Вопрос')
     options = models.ManyToManyField(PollOption, related_name='polls', verbose_name='Варианты ответов')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
-    end_time = models.DateTimeField(verbose_name='Время окончания',default=default_end_time, null=True, blank=True)
+    end_time = models.DateTimeField(verbose_name='Время окончания', default=default_end_time, null=True, blank=True)
     is_active = models.BooleanField(default=True, verbose_name='Активен')
     voted_users = models.ManyToManyField(CustomUser, related_name='voted_polls', blank=True,
                                          verbose_name='Проголосовавшие')

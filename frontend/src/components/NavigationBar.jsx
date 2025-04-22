@@ -3,7 +3,7 @@ import {Navbar, Nav, Container, Button, Modal, Form, Alert} from "react-bootstra
 import icon from "../assets/icon.png";
 import API from "../api";
 
-const NavigationBar = ({user, handleLogout}) => {
+const NavigationBar = ({user}) => {
     const [showSettings, setShowSettings] = React.useState(false);
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -82,6 +82,12 @@ const NavigationBar = ({user, handleLogout}) => {
             console.log("Ошибка при деактивации сессий");
             console.error(err);
         }
+    };
+
+    const handleLogout = () => {
+        console.log("Выход из аккаунта...");
+        localStorage.removeItem("token");
+        setTimeout(() => navigate("/login"), 1500);
     };
 
     return (

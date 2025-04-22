@@ -103,15 +103,9 @@ const PollPage = () => {
         );
     }
 
-    const handleLogout = () => {
-        console.log("Выход из аккаунта...");
-        localStorage.removeItem("token");
-        setTimeout(() => navigate("/login"), 1500);
-    };
-
     return (
         <div className="manage-group-container" style={{ color: "#000000", marginBottom: "20px" }}>
-            <NavigationBar user={user} handleLogout={handleLogout} />
+            <NavigationBar user={user}/>
             <Container className="mt-4">
                 <h2>Голосование в опросе {poll.question} группы {group.name} </h2>
                 {loadingMap && (

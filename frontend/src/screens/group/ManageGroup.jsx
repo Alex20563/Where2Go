@@ -103,11 +103,6 @@ const ManageGroup = () => {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
-    };
-
     if (loading || !group) {
         return (
             <div className="d-flex justify-content-center mt-5">
@@ -120,7 +115,7 @@ const ManageGroup = () => {
 
     return (
         <div className="manage-group-container">
-            <NavigationBar user={user} handleLogout={handleLogout}/>
+            <NavigationBar user={user}/>
             <Container className="mt-4">
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}

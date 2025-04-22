@@ -77,15 +77,9 @@ const CreatePoll = () => {
         );
     }
 
-    const handleLogout = () => {
-        console.log("Выход из аккаунта...");
-        localStorage.removeItem("token");
-        setTimeout(() => navigate("/login"), 1500);
-    };
-
     return (
         <div className="create-poll-container" style={{ color: "#2a6ebb", marginBottom: "20px" }}>
-            <NavigationBar user={user} handleLogout={handleLogout} />
+            <NavigationBar user={user}/>
 
             <Container className="mt-4">
                 <h2>Создание опроса {groupName && `для группы: ${groupName}`}</h2>

@@ -98,7 +98,7 @@ const CreateGroup = () => {
 
     return (
         <div className="create-group-container">
-            <NavigationBar user={user} handleLogout={() => console.log("logout")} />
+            <NavigationBar user={user} />
 
             <Container className="mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-3">

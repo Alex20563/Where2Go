@@ -34,10 +34,6 @@ const AllGroups = () => {
         fetchGroups();
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        setTimeout(() => navigate("/login"), 1000);
-    };
 
     const handleShowGroupInfo = async (group) => {
         try {
@@ -98,7 +94,7 @@ const AllGroups = () => {
 
     return (
         <div>
-            <NavigationBar user={user} handleLogout={handleLogout} />
+            <NavigationBar user={user}/>
 
             <Container className="mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-3">
