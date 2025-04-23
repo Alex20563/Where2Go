@@ -2,13 +2,15 @@ import React, {useEffect, useState} from "react";
 import {Navbar, Nav, Container, Button, Modal, Form, Alert} from "react-bootstrap";
 import icon from "../assets/icon.png";
 import API from "../api";
-
+import {useNavigate} from "react-router-dom";
+//TODO: деактивация сессий
 const NavigationBar = ({user}) => {
     const [showSettings, setShowSettings] = React.useState(false);
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const navigate = useNavigate();
     const [newUsername, setNewUsername] = useState(user.username.toString());
 
     useEffect(() => {

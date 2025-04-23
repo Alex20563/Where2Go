@@ -4,8 +4,7 @@ import NavigationBar from "../../components/NavigationBar";
 import { useNavigate } from "react-router-dom";
 import API from "../../api";
 import EditPollModal from "./components/EditPollModal";
-import DeletePollModal from "./components/DeletePollModal";
-import ClosePollModal from "./components/ClosePollModal";
+import ConfirmModal from "./components/ConfirmPollModal";
 
 
 //TODO: конфирм удаления и закрытия
@@ -15,7 +14,7 @@ const AllPolls = () => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editingPoll, setEditingPoll] = useState(null);
-    const [ShowEditModal, setShowEditModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [closingPoll, setClosingPoll] = useState(null);
     const [showCloseModal, setShowCloseModal] = useState(false);
     const [selectedPollId, setSelectedPollId] = useState(null);
@@ -208,27 +207,35 @@ const AllPolls = () => {
             </Container>
 
             <EditPollModal
-                show={ShowEditModal}
+                show={showEditModal}
                 onHide ={() => setShowEditModal(false)}
                 poll={editingPoll}
                 onSave={handleSavePoll}
                 error={error}
                 success={success}
             />
-            <DeletePollModal
+            <ConfirmModal
                 show={showDeleteModal}
                 onHide={() => setShowDeleteModal(false)}
                 onConfirm={handleDeleteConfirm}
                 error={error}
                 success={success}
+                title="Подтвердите удаление"
+                message="Вы уверены, что хотите удалить этот опрос? Это действие нельзя отменить."
+                confirmLabel="Удалить"
             />
-            <ClosePollModal
+
+            <ConfirmModal
                 show={showCloseModal}
                 onHide={() => setShowCloseModal(false)}
                 onConfirm={handleCloseConfirm}
                 error={error}
                 success={success}
+                title="Подтвердите закрытие"
+                message="Вы уверены, что хотите закрыть опрос? После этого голосование будет завершено."
+                confirmLabel="Закрыть"
             />
+
         </div>
     );
 };

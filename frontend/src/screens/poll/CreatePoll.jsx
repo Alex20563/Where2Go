@@ -54,8 +54,6 @@ const CreatePoll = () => {
         try {
             await API.post(`/groups/${groupId}/polls/create/`, {
                 question: question.trim(),
-                //TODO: решить что с options
-                options: []
             });
 
             setSuccess("Опрос успешно создан!");

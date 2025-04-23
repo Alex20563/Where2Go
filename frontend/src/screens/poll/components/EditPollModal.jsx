@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Modal, Button, Form, Alert} from "react-bootstrap";
 
-const EditPollModal = ({ show, handleClose, poll, onSave, error, success }) => {
+const EditPollModal = ({ show, onHide, poll, onSave, error, success }) => {
     const [question, setQuestion] = useState("");
     const [endTime, setEndTime] = useState("");
 
@@ -24,7 +24,7 @@ const EditPollModal = ({ show, handleClose, poll, onSave, error, success }) => {
     };
 
     return (
-        <Modal show={show} onHide={handleClose}>
+        <Modal show={show} onHide={onHide}>
             <Modal.Header closeButton>
                 <Modal.Title>Редактировать опрос</Modal.Title>
             </Modal.Header>
