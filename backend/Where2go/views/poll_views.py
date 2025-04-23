@@ -1,6 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from .map_views import NearbyPlacesView
 from ..models import Group, Poll
 from ..serializers import PollSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -23,19 +25,6 @@ class CreatePollView(APIView):
                     type=openapi.TYPE_STRING,
                     description='Вопрос опроса'
                 ),
-                'options': openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    items=openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'text': openapi.Schema(
-                                type=openapi.TYPE_STRING,
-                                description='Текст варианта ответа'
-                            )
-                        }
-                    ),
-                    description='Список вариантов ответа'
-                )
             }
         ),
         responses={
@@ -185,20 +174,21 @@ class VotePollView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['choices', 'coordinates'],
+            required=['coordinates'],
             properties={
-                'choices': openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    items=openapi.Items(type=openapi.TYPE_INTEGER),
-                    description='Список ID вариантов'
-                ),
                 'coordinates': openapi.Schema(
                     type=openapi.TYPE_OBJECT,
+                    required=['lat', 'lon', 'categories'],
                     properties={
                         'lat': openapi.Schema(type=openapi.TYPE_NUMBER, description='Широта'),
-                        'lon': openapi.Schema(type=openapi.TYPE_NUMBER, description='Долгота')
+                        'lon': openapi.Schema(type=openapi.TYPE_NUMBER, description='Долгота'),
+                        'categories': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Items(type=openapi.TYPE_STRING),
+                            description='Категории (например, кафе, бар)'
+                        )
                     },
-                    description='Координаты пользователя'
+                    description='Координаты и категории пользователя'
                 )
             }
         )
@@ -206,7 +196,7 @@ class VotePollView(APIView):
     def post(self, request, id):
         poll = get_object_or_404(Poll, id=id)
 
-        # Проверки:
+        # Проверки
         if poll.is_expired:
             return Response({'error': 'Срок опроса истек'}, status=400)
         if request.user not in poll.group.members.all():
@@ -214,20 +204,18 @@ class VotePollView(APIView):
         if request.user in poll.voted_users.all():
             return Response({'error': 'Вы уже голосовали'}, status=403)
 
-        choices = request.data.get('choices')
-        if not choices:
-            return Response({'error': 'Не выбраны варианты'}, status=400)
-
         coordinates = request.data.get('coordinates')
         if not coordinates:
             return Response({'error': 'Координаты не предоставлены'}, status=400)
 
-        # Голосование:
-        for option_id in choices:
-            option = get_object_or_404(poll.options, id=option_id)
-            option.votes += 1
-            option.save()
+        # Проверим наличие обязательных полей
+        if not all(k in coordinates for k in ('lat', 'lon', 'categories')):
+            return Response({'error': 'lat, lon и categories обязательны'}, status=400)
 
+        if not isinstance(coordinates['categories'], list):
+            return Response({'error': 'categories должен быть списком'}, status=400)
+
+        # Голосование:
         poll.voted_users.add(request.user)
 
         # Сохраняем координаты
@@ -237,13 +225,32 @@ class VotePollView(APIView):
         return Response({'message': 'Голос учтён'}, status=200)
 
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 class PollResultsView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         operation_description="Получение результатов опроса",
         responses={
-            200: PollSerializer,
+            200: openapi.Response(
+                description='Результаты опроса и список подходящих мест',
+                examples={
+                    'application/json': {
+                        "total_votes": 5,
+                        "average_point": {"lat": 55.75, "lon": 37.62},
+                        "most_popular_category": "кафе",
+                        "places": [
+                            {"name": "Кафе 'Вкусно'", "lat": 55.751, "lon": 37.618},
+                            {"name": "Кафе 'Кофейня'", "lat": 55.749, "lon": 37.622}
+                        ]
+                    }
+                }
+            ),
             403: 'Нет прав для просмотра результатов',
             404: 'Опрос не найден'
         }
@@ -251,15 +258,32 @@ class PollResultsView(APIView):
     def get(self, request, id):
         poll = get_object_or_404(Poll, id=id)
 
-        # Проверяем права на просмотр результатов
+        # Проверка прав
         if not (poll.is_expired or not poll.is_active or request.user == poll.creator
                 or request.user == poll.group.admin):
             return Response({'error': 'Результаты будут доступны после завершения опроса.'},
                             status=status.HTTP_403_FORBIDDEN)
 
-        # Формируем данные для ответа
         results_data = poll.get_results()
-        return Response(results_data)
+        lat, lon = results_data['average_point']
+        category = results_data['most_popular_category']
+
+        # Создаём экземпляр NearbyPlacesView
+        nearby_view = NearbyPlacesView()
+
+        # TODO: так плохо делать, надо вынести эту функцию из класса, так как это приватный метод
+        places = nearby_view._get_2gis_places(
+            base_lat=lat,
+            base_lon=lon,
+            category=category,
+            radius=500,
+            min_rating=4.0
+        )
+
+        return Response({
+            'results': results_data,
+            'recommended_places': places
+        })
 
 
 class PollUpdateView(UpdateAPIView):

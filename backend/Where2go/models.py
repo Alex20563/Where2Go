@@ -1,5 +1,7 @@
+from collections import Counter
 from datetime import timedelta
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.contrib.auth.models import AbstractUser, User
 from django.utils import timezone
@@ -82,41 +84,59 @@ def default_end_time():
 
 
 class Poll(models.Model):
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='polls', verbose_name='Группа')
-    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_polls',
-                                verbose_name='Создатель')
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='polls', verbose_name='Группа')
+    creator = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='created_polls', verbose_name='Создатель')
     question = models.CharField(max_length=255, verbose_name='Вопрос')
-    options = models.ManyToManyField(PollOption, related_name='polls', verbose_name='Варианты ответов')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     end_time = models.DateTimeField(verbose_name='Время окончания', default=default_end_time, null=True, blank=True)
     is_active = models.BooleanField(default=True, verbose_name='Активен')
-    voted_users = models.ManyToManyField(CustomUser, related_name='voted_polls', blank=True,
-                                         verbose_name='Проголосовавшие')
+    voted_users = models.ManyToManyField('CustomUser', related_name='voted_polls', blank=True, verbose_name='Проголосовавшие')
+
     coordinates = models.JSONField(default=list, blank=True, verbose_name='Координаты')
+    voted_categories = ArrayField(
+        models.CharField(max_length=100),
+        default=list,
+        blank=True,
+        verbose_name='Выбранные категории'
+    )
+
+    class Meta:
+        verbose_name = 'Опрос'
+        verbose_name_plural = 'Опросы'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.question} ({self.group.name})"
 
     @property
     def is_expired(self):
-        if self.end_time:
-            return timezone.now() >= self.end_time
-        return False
-
-    @property
-    def total_votes(self):
-        return sum(option.votes for option in self.options.all())
+        return self.end_time and timezone.now() >= self.end_time
 
     def get_results(self):
-        total = self.total_votes
-        results = []
-        for option in self.options.all():
-            percentage = (option.votes / total * 100) if total > 0 else 0
-            results.append({
-                'text': option.text,
-                'votes': option.votes,
-                'percentage': round(percentage, 2)
-            })
+        if not self.coordinates:
+            return {
+                'total_votes': 0,
+                'average_point': None,
+                'most_popular_category': None
+            }
+
+        total_votes = len(self.coordinates)
+        total_lat = sum(coord['lat'] for coord in self.coordinates)
+        total_lon = sum(coord['lon'] for coord in self.coordinates)
+
+        average_point = {
+            'lat': total_lat / total_votes,
+            'lon': total_lon / total_votes
+        }
+
+        categories = [cat for coord in self.coordinates for cat in coord.get('categories', [])]
+        most_common = Counter(categories).most_common(1)
+        most_popular_category = most_common[0][0] if most_common else None
+
         return {
-            'total_votes': total,
-            'results': results
+            'total_votes': total_votes,
+            'average_point': average_point,
+            'most_popular_category': most_popular_category
         }
 
     def calculate_average_point(self):
@@ -127,10 +147,8 @@ class Poll(models.Model):
         count = len(self.coordinates)
         return {'lat': total_lat / count, 'lon': total_lon / count}
 
-    def __str__(self):
-        return f"{self.question} ({self.group.name})"
-
-    class Meta:
-        verbose_name = 'Опрос'
-        verbose_name_plural = 'Опросы'
-        ordering = ['-created_at']
+    def most_popular_category(self):
+        if not self.voted_categories:
+            return None
+        counter = Counter(self.voted_categories)
+        return counter.most_common(1)[0][0]

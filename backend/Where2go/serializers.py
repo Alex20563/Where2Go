@@ -69,31 +69,15 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'friends']
 
 
-class PollOptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PollOption
-        fields = ['id', 'text', 'votes']
-
-
-class PollOptionResultSerializer(serializers.ModelSerializer):
-    percentage = serializers.FloatField()
-
-    class Meta:
-        model = PollOption
-        fields = ['id', 'text', 'votes', 'percentage']
-
-
 class PollSerializer(serializers.ModelSerializer):
-    options = PollOptionSerializer(many=True)
     results = serializers.SerializerMethodField()
     is_expired = serializers.BooleanField(read_only=True)
-    total_votes = serializers.IntegerField(read_only=True)
     has_voted = serializers.SerializerMethodField()
 
     class Meta:
         model = Poll
-        fields = ['id', 'group', 'creator', 'question', 'options', 'created_at', 'end_time', 'is_active', 'results',
-                  'is_expired', 'total_votes', 'has_voted']
+        fields = ['id', 'group', 'creator', 'question', 'created_at', 'end_time', 'is_active', 'results',
+                  'is_expired', 'has_voted']
         read_only_fields = ['creator', 'created_at']
 
     def get_results(self, obj):
@@ -103,13 +87,8 @@ class PollSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get('request')
-        options_data = validated_data.pop('options')
         validated_data.pop('creator', None)
         poll = Poll.objects.create(**validated_data, creator=request.user)
-
-        for option_data in options_data:
-            option = PollOption.objects.create(text=option_data['text'])
-            poll.options.add(option)
 
         return poll
 
