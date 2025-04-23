@@ -1,8 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from .map_views import NearbyPlacesView
+from ..management.places import get_places_with_meta
 from ..models import Group, Poll
 from ..serializers import PollSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -208,12 +207,32 @@ class VotePollView(APIView):
         if not coordinates:
             return Response({'error': 'Координаты не предоставлены'}, status=400)
 
-        # Проверим наличие обязательных полей
-        if not all(k in coordinates for k in ('lat', 'lon', 'categories')):
-            return Response({'error': 'lat, lon и categories обязательны'}, status=400)
+        # Проверяем, что coordinates - это объект (dict), а не список
+        if not isinstance(coordinates, dict):
+            return Response({'error': 'coordinates должно быть объектом'}, status=400)
 
+        # Проверяем, что в объекте coordinates есть все необходимые поля
+        if not all(k in coordinates for k in ('lat', 'lon', 'categories')):
+            return Response({'error': 'coordinates должен содержать lat, lon и categories'}, status=400)
+
+        # Проверяем, что lat и lon являются числами
+        if not isinstance(coordinates['lat'], (int, float)) or not isinstance(coordinates['lon'], (int, float)):
+            return Response({'error': 'lat и lon должны быть числами'}, status=400)
+
+        # Проверяем, что categories - это список
         if not isinstance(coordinates['categories'], list):
             return Response({'error': 'categories должен быть списком'}, status=400)
+
+        # Проверяем, что каждый элемент в categories - это объект с нужными полями
+        for category in coordinates['categories']:
+            if not isinstance(category, dict):
+                return Response({'error': 'Каждый элемент categories должен быть объектом (dict)'}, status=400)
+
+            if not all(k in category for k in ('label', 'value')):
+                return Response({'error': 'Каждый элемент categories должен содержать label и value'}, status=400)
+
+            if not isinstance(category['label'], str) or not isinstance(category['value'], str):
+                return Response({'error': 'label и value должны быть строками'}, status=400)
 
         # Голосование:
         poll.voted_users.add(request.user)
@@ -221,6 +240,10 @@ class VotePollView(APIView):
         # Сохраняем координаты
         poll.coordinates.append(coordinates)
         poll.save()
+
+        if poll.voted_users.count() == poll.group.members.count():
+            poll.is_active = False
+            poll.save()
 
         return Response({'message': 'Голос учтён'}, status=200)
 
@@ -259,24 +282,30 @@ class PollResultsView(APIView):
                             status=status.HTTP_403_FORBIDDEN)
 
         results_data = poll.get_results()
-        lat, lon = results_data['average_point']
-        category = results_data['most_popular_category']
+        if not results_data or not results_data.get('total_votes'):
+            return Response({
+                'results': {
+                    'total_votes': 0,
+                    'average_point': {
+                        'lat': 0,
+                        'lan': 0,
+                    },
+                    'most_popular_categories': [],
+                },
+                'recommended_places': []
+            })
+        categories = results_data['most_popular_categories']
+        lat = results_data['average_point']['lat']
+        lon = results_data['average_point']['lon']
 
-        # Создаём экземпляр NearbyPlacesView
-        nearby_view = NearbyPlacesView()
-
-        # TODO: так плохо делать, надо вынести эту функцию из класса, так как это приватный метод
-        places = nearby_view._get_2gis_places(
-            base_lat=lat,
-            base_lon=lon,
-            category=category,
-            radius=500,
-            min_rating=4.0
-        )
+        recommended_places = []
+        for category in categories:
+            data = get_places_with_meta(lat, lon, category)
+            recommended_places.append(data)
 
         return Response({
             'results': results_data,
-            'recommended_places': places
+            'recommended_places': recommended_places
         })
 
 

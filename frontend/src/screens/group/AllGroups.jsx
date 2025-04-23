@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
 import GroupInfoModal from "./components/GroupInfoModal";
+import "../../styles/styles.css";
 
 const AllGroups = () => {
     const navigate = useNavigate();
@@ -93,7 +94,7 @@ const AllGroups = () => {
     }
 
     return (
-        <div>
+        <div className="custom-bg">
             <NavigationBar user={user}/>
 
             <Container className="mt-4">

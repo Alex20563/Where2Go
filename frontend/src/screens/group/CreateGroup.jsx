@@ -3,6 +3,8 @@ import {Alert, Button, Card, Col, Container, Form, Row, Spinner} from "react-boo
 import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
 import {useNavigate} from "react-router-dom";
+import "../../styles/styles.css";
+
 
 const CreateGroup = () => {
     const navigate = useNavigate();
@@ -97,7 +99,7 @@ const CreateGroup = () => {
     }
 
     return (
-        <div className="create-group-container">
+        <div className="custom-bg">
             <NavigationBar user={user} />
 
             <Container className="mt-4">

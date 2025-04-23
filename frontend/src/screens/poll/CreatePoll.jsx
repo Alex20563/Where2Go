@@ -3,6 +3,7 @@ import {Container, Button, Alert, Spinner} from "react-bootstrap";
 import NavigationBar from "../../components/NavigationBar";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../../api";
+import "../../styles/styles.css";
 
 const CreatePoll = () => {
     const location = useLocation();
@@ -76,7 +77,7 @@ const CreatePoll = () => {
     }
 
     return (
-        <div className="create-poll-container" style={{ color: "#2a6ebb", marginBottom: "20px" }}>
+        <div className="custom-bg" style={{ color: "#2a6ebb", marginBottom: "20px" }}>
             <NavigationBar user={user}/>
 
             <Container className="mt-4">

@@ -73,11 +73,12 @@ class PollSerializer(serializers.ModelSerializer):
     results = serializers.SerializerMethodField()
     is_expired = serializers.BooleanField(read_only=True)
     has_voted = serializers.SerializerMethodField()
+    coordinates = serializers.JSONField(read_only=True)
 
     class Meta:
         model = Poll
         fields = ['id', 'group', 'creator', 'question', 'created_at', 'end_time', 'is_active', 'results',
-                  'is_expired', 'has_voted']
+                  'is_expired', 'has_voted', 'coordinates']
         read_only_fields = ['creator', 'created_at']
 
     def get_results(self, obj):

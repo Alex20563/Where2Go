@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../../api";
 import EditPollModal from "./components/EditPollModal";
 import ConfirmModal from "./components/ConfirmPollModal";
+import "../../styles/styles.css";
 
 
 const AllPolls = () => {
@@ -66,7 +67,10 @@ const AllPolls = () => {
         setShowDeleteModal(true);
     };
 
-    const handleResults = (pollId) => navigate(`/polls/${pollId}/results`);
+    const handleResults = (poll) => {
+        //console.log(poll);
+        navigate(`/polls/${poll.id}/results`);
+    }
 
     const handleEdit = (pollId) => {
         setError("");
@@ -88,7 +92,13 @@ const AllPolls = () => {
         try {
             await API.post(`/polls/${closingPoll.id}/close/`);
             setSuccess("Опрос успешно закрыт.");
-            setPolls(polls.filter(p => p.id !== closingPoll));
+            closingPoll.is_active = false;
+            const index = activePolls.findIndex(poll => poll.id === closingPoll.id);
+            if (index !== -1) {
+                const [closedPoll] = activePolls.splice(index, 1);
+                archivedPolls.push(closedPoll);
+            }
+            setPolls(polls);
             setShowCloseModal(false);
         } catch (err) {
             setError("Ошибка при закрытии опроса.");
@@ -158,7 +168,7 @@ const AllPolls = () => {
     }
 
     return (
-        <div>
+        <div className="custom-bg">
             <NavigationBar user={user}/>
 
             <Container className="mt-4">
@@ -189,7 +199,7 @@ const AllPolls = () => {
                             <Card className="mb-3 bg-light">
                                 <Card.Body>
                                     <Card.Title>{poll.question}</Card.Title>
-                                    <Button variant="info" size="sm" onClick={() => handleResults(poll.id)}>
+                                    <Button variant="info" size="sm" onClick={() => handleResults(poll)}>
                                         Результаты
                                     </Button>
                                     {poll.creator === user?.id && (

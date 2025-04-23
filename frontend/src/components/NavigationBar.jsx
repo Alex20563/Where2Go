@@ -4,6 +4,7 @@ import icon from "../assets/icon.png";
 import API from "../api";
 import {useNavigate} from "react-router-dom";
 //TODO: деактивация сессий
+
 const NavigationBar = ({user}) => {
     const [showSettings, setShowSettings] = React.useState(false);
     const [oldPassword, setOldPassword] = useState('');

@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Alert, Button, Container, Spinner} from "react-bootstrap";
 import {useNavigate, useParams} from "react-router-dom";
 import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
-import { load2GIS } from "../../utils/load2gis";
+import {load2GIS} from "../../utils/load2gis";
 import Select from "react-select";
+import "../../styles/styles.css";
+
 
 const PollPage = () => {
     const {pollId} = useParams();
@@ -47,7 +49,7 @@ const PollPage = () => {
 
                             let marker = null;
                             map.on("click", function (e) {
-                                const { lat, lng } = e.latlng;
+                                const {lat, lng} = e.latlng;
                                 if (marker) {
                                     marker.setLatLng([lat, lng]);
                                 } else {
@@ -102,17 +104,21 @@ const PollPage = () => {
         const [latitude, longitude] = selectedCoords;
 
         try {
-            await API.post(`/polls/${pollId}/vote/`, {
-                lat: latitude,
-                lon: longitude,
-                categories: selectedOptions,
+            const response = await API.post(`/polls/${pollId}/vote/`, {
+                coordinates: {
+                    lat: latitude,
+                    lon: longitude,
+                    categories: selectedOptions,
+                },
             });
-            setSuccess("Ваш голос учтен!");
-            setTimeout(() => navigate(`/polls/${pollId}/results`), 1500);
+            if (response.status === 200) {
+                setSuccess("Ваш голос учтен!");
+                setTimeout(() => navigate(`/polls/`), 1500);
+            }
 
         } catch (error) {
+            setError(`Ошибка при голосовании. ${error.response?.data?.error}`);
             console.error("Ошибка при голосовании:", error);
-            setError("Ошибка при голосовании. Попробуйте позже.");
         } finally {
             setIsSubmitting(false);
         }
@@ -129,11 +135,11 @@ const PollPage = () => {
     }
 
     const placeOptions = Array.isArray(places)
-        ? places.map(place => ({ value: place, label: place }))
+        ? places.map(place => ({value: place, label: place}))
         : [];
 
     return (
-        <div className="manage-group-container" style={{ color: "#000000", marginBottom: "20px" }}>
+        <div className="custom-bg" style={{color: "#000000", marginBottom: "20px"}}>
             <NavigationBar user={user}/>
             <Container className="mt-4">
                 {error && <Alert variant="danger">{error}</Alert>}
@@ -149,7 +155,7 @@ const PollPage = () => {
                 )}
                 <div
                     ref={mapRef}
-                    style={{ width: "100%", height: "400px", marginBottom: "20px" }}
+                    style={{width: "100%", height: "400px", marginBottom: "20px"}}
                 />
 
                 <Select
@@ -168,10 +174,15 @@ const PollPage = () => {
                     <Button
                         variant="primary"
                         onClick={handleSubmit}
-                        disabled={selectedCoords.length === 0 || selectedOptions.length === 0}
+                        disabled={
+                            selectedCoords.length === 0 ||
+                            selectedOptions.length === 0 ||
+                            isSubmitting
+                        }
                     >
-                        Отправить
+                        {isSubmitting ? "Отправка..." : "Отправить"}
                     </Button>
+
                 </div>
             </Container>
         </div>

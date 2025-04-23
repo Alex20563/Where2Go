@@ -117,7 +117,7 @@ class Poll(models.Model):
             return {
                 'total_votes': 0,
                 'average_point': None,
-                'most_popular_category': None
+                'most_popular_categories': None
             }
 
         total_votes = len(self.coordinates)
@@ -129,14 +129,26 @@ class Poll(models.Model):
             'lon': total_lon / total_votes
         }
 
-        categories = [cat for coord in self.coordinates for cat in coord.get('categories', [])]
-        most_common = Counter(categories).most_common(1)
-        most_popular_category = most_common[0][0] if most_common else None
+        categories = [
+            cat["value"]
+            for coord in self.coordinates
+            for cat in coord.get("categories", [])
+            if isinstance(cat, dict) and "value" in cat
+        ]
+
+        counter = Counter(categories)
+        if counter:
+            max_votes = max(counter.values())
+            top_categories = sorted([
+                cat for cat, count in counter.items() if count == max_votes
+            ])
+        else:
+            top_categories = []
 
         return {
             'total_votes': total_votes,
             'average_point': average_point,
-            'most_popular_category': most_popular_category
+            'most_popular_categories': top_categories
         }
 
     def calculate_average_point(self):

@@ -6,6 +6,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import API from "../../api";
 import ConfirmModal from "./components/ConfirmModal";
 import RenameGroupModal from "./components/RenameGroupModal";
+import "../../styles/styles.css";
 
 const ManageGroup = () => {
     const navigate = useNavigate();
@@ -114,7 +115,7 @@ const ManageGroup = () => {
     }
 
     return (
-        <div className="manage-group-container">
+        <div className="custom-bg">
             <NavigationBar user={user}/>
             <Container className="mt-4">
                 {error && <Alert variant="danger">{error}</Alert>}
