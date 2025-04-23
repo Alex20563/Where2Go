@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Container, Spinner } from "react-bootstrap";
+import {Alert, Button, Container, Spinner} from "react-bootstrap";
 import {useNavigate, useParams} from "react-router-dom";
 import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
@@ -18,6 +18,10 @@ const PollPage = () => {
     const [places, setPlaces] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadingMap, setLoadingMap] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+
 
     useEffect(() => {
         load2GIS()
@@ -88,11 +92,30 @@ const PollPage = () => {
         fetchData();
     }, []);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         selectedOptions.map(option => option.value)
+        if (selectedCoords.length !== 2 || selectedOptions.length === 0) {
+            return;
+        }
 
-        console.log("Выбранные координаты:", selectedCoords);
-        console.log("Выбранное место:", selectedOptions);
+        setIsSubmitting(true);
+        const [latitude, longitude] = selectedCoords;
+
+        try {
+            await API.post(`/polls/${pollId}/vote/`, {
+                lat: latitude,
+                lon: longitude,
+                categories: selectedOptions,
+            });
+            setSuccess("Ваш голос учтен!");
+            setTimeout(() => navigate(`/polls/${pollId}/results`), 1500);
+
+        } catch (error) {
+            console.error("Ошибка при голосовании:", error);
+            setError("Ошибка при голосовании. Попробуйте позже.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (loading) {
@@ -113,6 +136,9 @@ const PollPage = () => {
         <div className="manage-group-container" style={{ color: "#000000", marginBottom: "20px" }}>
             <NavigationBar user={user}/>
             <Container className="mt-4">
+                {error && <Alert variant="danger">{error}</Alert>}
+                {success && <Alert variant="success">{success}</Alert>}
+
                 <h2>Голосование в опросе {poll.question} группы {group.name} </h2>
                 {loadingMap && (
                     <div className="d-flex justify-content-center mt-5">
