@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Container, Form, Spinner } from "react-bootstrap";
+import { Button, Container, Spinner } from "react-bootstrap";
 import {useNavigate, useParams} from "react-router-dom";
 import NavigationBar from "../../components/NavigationBar";
 import API from "../../api";
 import { load2GIS } from "../../utils/load2gis";
+import Select from "react-select";
 
 const PollPage = () => {
     const {pollId} = useParams();
     const navigate = useNavigate();
     const mapRef = useRef(null);
-    const [selectedPlace, setSelectedPlace] = useState("");
+    const [selectedOptions, setSelectedOptions] = useState([]);
     const [selectedCoords, setSelectedCoords] = useState([]);
     const [user, setUser] = useState(null);
     const [poll, setPoll] = useState(null);
@@ -88,9 +89,10 @@ const PollPage = () => {
     }, []);
 
     const handleSubmit = () => {
+        selectedOptions.map(option => option.value)
 
         console.log("Выбранные координаты:", selectedCoords);
-        console.log("Выбранное место:", selectedPlace);
+        console.log("Выбранное место:", selectedOptions);
     };
 
     if (loading) {
@@ -102,6 +104,10 @@ const PollPage = () => {
             </div>
         );
     }
+
+    const placeOptions = Array.isArray(places)
+        ? places.map(place => ({ value: place, label: place }))
+        : [];
 
     return (
         <div className="manage-group-container" style={{ color: "#000000", marginBottom: "20px" }}>
@@ -120,22 +126,14 @@ const PollPage = () => {
                     style={{ width: "100%", height: "400px", marginBottom: "20px" }}
                 />
 
-                <Form.Select
-                    value={selectedPlace}
-                    onChange={(e) => setSelectedPlace(e.target.value)}
+                <Select
+                    isMulti
+                    options={placeOptions}
+                    value={selectedOptions}
+                    onChange={(options) => setSelectedOptions(options)}
                     className="mb-3"
-                >
-                    <option value="" disabled hidden>
-                        Выберите место из списка
-                    </option>
-                    {Array.isArray(places) &&
-                        places.map((place) => (
-                            <option key={place} value={place}>
-                                {place}
-                            </option>
-                        ))}
-                </Form.Select>
-
+                    placeholder="Выберите места из списка..."
+                />
 
                 <div className="d-flex justify-content-between">
                     <Button variant="secondary" onClick={() => navigate("/polls")}>
@@ -144,7 +142,7 @@ const PollPage = () => {
                     <Button
                         variant="primary"
                         onClick={handleSubmit}
-                        disabled={selectedCoords.length === 0 || !selectedPlace}
+                        disabled={selectedCoords.length === 0 || selectedOptions.length === 0}
                     >
                         Отправить
                     </Button>

@@ -7,7 +7,6 @@ import EditPollModal from "./components/EditPollModal";
 import ConfirmModal from "./components/ConfirmPollModal";
 
 
-//TODO: конфирм удаления и закрытия
 const AllPolls = () => {
     const navigate = useNavigate();
     const [polls, setPolls] = useState([]);
@@ -67,8 +66,7 @@ const AllPolls = () => {
         setShowDeleteModal(true);
     };
 
-    //TODO: результаты опроса
-    const handleResults = (pollId) => console.log(`Смотрим результаты опроса ${pollId}`);
+    const handleResults = (pollId) => navigate(`/polls/${pollId}/results`);
 
     const handleEdit = (pollId) => {
         setError("");
