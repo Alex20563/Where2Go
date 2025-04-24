@@ -134,7 +134,7 @@ class GroupView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GroupMemberView(APIView):
+class AddGroupMemberView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, group_id):
@@ -144,6 +144,10 @@ class GroupMemberView(APIView):
         member = get_object_or_404(CustomUser, id=user_id)
         group.members.add(member)
         return Response({'message': 'Участник добавлен.'}, status=status.HTTP_200_OK)
+
+
+class RemoveGroupMemberView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request, group_id):
         # Удаление участника

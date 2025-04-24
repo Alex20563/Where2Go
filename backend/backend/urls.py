@@ -19,7 +19,7 @@ from django.urls import path, re_path
 from django.views.generic import TemplateView
 from Where2go.views.auth_views import LoginView2FA, Generate2FASecretView, LoginView, ActivateUserView
 from Where2go.views.user_views import UserSearchView, GetMeView, UserCreate, UpdateUserView, UserListView, UserDetailView, UserDeleteView, UserFriendsView
-from Where2go.views.group_views import GroupDetailView, ListUserGroupsView, CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, GroupMemberView, DeleteGroupView
+from Where2go.views.group_views import GroupDetailView, ListUserGroupsView, CreateGroupView, JoinGroupView, LeaveGroupView, ManageGroupView, GroupView, AddGroupMemberView, RemoveGroupMemberView, DeleteGroupView
 from Where2go.views.poll_views import PollUpdateView, CreatePollView, PollListView, PollListAllView, PollDetailView, ClosePollView, VotePollView, PollResultsView#, DeletePollView
 from Where2go.views.admin_views import UserListView, UserDeleteView, UserBanView, GroupListView, GroupEditView, GroupDeleteView, UserSessionDeleteView
 from Where2go.views.map_views import NearbyPlacesView
@@ -62,8 +62,8 @@ urlpatterns = [
     path('api/leave-group/<int:group_id>/', LeaveGroupView.as_view(), name='leave-group'),
     path('api/manage-group/<int:group_id>/', ManageGroupView.as_view(), name='manage-group'),
     path('api/groups/', ListUserGroupsView.as_view(), name='list-user-groups'),
-    path('api/groups/<int:group_id>/add-member/', GroupMemberView.as_view(), name='add-member'),
-    path('api/groups/<int:group_id>/remove-member/', GroupMemberView.as_view(), name='remove-member'),
+    path('api/groups/<int:group_id>/add-member/', AddGroupMemberView.as_view(), name='add-member'),
+    path('api/groups/<int:group_id>/remove-member/', RemoveGroupMemberView.as_view(), name='remove-member'),
     path('api/groups/<int:group_id>/', DeleteGroupView.as_view(), name='delete-group'),
     path('api/groups/<int:group_id>/detail/', GroupDetailView.as_view(), name='group-detail'),
     

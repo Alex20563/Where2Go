@@ -107,7 +107,7 @@ DATABASES = {
         'PORT': '5432',                              # Порт (по умолчанию 5432 для PostgreSQL)
     }
 }
-
+# CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:8081",

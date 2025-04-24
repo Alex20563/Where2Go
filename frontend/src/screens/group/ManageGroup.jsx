@@ -63,17 +63,19 @@ const ManageGroup = () => {
 
     const handleConfirmDeleteUser = async () => {
         try {
-            //TODO: удаление пользователя из группы
-
-            // await API.delete(`/groups/${groupId}/members/${selectedUser.id}/`);
-            // setMembers(prev => prev.filter(m => m.id !== selectedUser.id));
-            // setShowDeleteUserModal(false);
+            await API.delete(`/groups/${groupId}/remove-member/`, {
+                data: {
+                    user_id: selectedUser.id,
+                }
+            });
+            setMembers(prev => prev.filter(m => m.id !== selectedUser.id));
+            setShowDeleteUserModal(false);
             console.log("Удаление пользователя: ", selectedUser.username);
         } catch (err) {
             console.error("Ошибка при удалении пользователя:", err);
         }
     };
-
+//TODO: добавление участника в группу
     const handleRenameGroup = async (newName, currentGroup) => {
         try {
             await API.post(`/manage-group/${groupId}/`, {
