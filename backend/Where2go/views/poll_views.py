@@ -253,17 +253,38 @@ class PollResultsView(APIView):
 
     @swagger_auto_schema(
         operation_description="Получение результатов опроса",
+        manual_parameters=[
+            openapi.Parameter('radius', openapi.IN_QUERY, description="Радиус поиска в метрах",
+                              type=openapi.TYPE_INTEGER, default=1000),
+            openapi.Parameter('min_rating', openapi.IN_QUERY, description="Минимальный рейтинг",
+                              type=openapi.TYPE_NUMBER, default=4.0),
+        ],
         responses={
             200: openapi.Response(
                 description='Результаты опроса и список подходящих мест',
                 examples={
                     'application/json': {
-                        "total_votes": 5,
-                        "average_point": {"lat": 55.75, "lon": 37.62},
-                        "most_popular_category": "кафе",
-                        "places": [
-                            {"name": "Кафе 'Вкусно'", "lat": 55.751, "lon": 37.618},
-                            {"name": "Кафе 'Кофейня'", "lat": 55.749, "lon": 37.622}
+                        "results": {
+                            "total_votes": 5,
+                            "average_point": {"lat": 55.75, "lon": 37.62},
+                            "most_popular_categories": ["кафе"]
+                        },
+                        "recommended_places": [
+                            {
+                                "search_point": {
+                                    "lat": 55.75,
+                                    "lon": 37.62,
+                                    "radius": 500
+                                },
+                                "places": [
+                                    {
+                                        "name": "Кафе 'Вкусно'",
+                                        "lat": 55.751,
+                                        "lon": 37.618,
+                                        "rating": 4.5
+                                    }
+                                ]
+                            }
                         ]
                     }
                 }
@@ -273,6 +294,13 @@ class PollResultsView(APIView):
         }
     )
     def get(self, request, id):
+        # Параметры из запроса
+        try:
+            radius = int(request.GET.get('radius', 1000))
+            min_rating = float(request.GET.get('min_rating', 4.0))
+        except (TypeError, ValueError):
+            return Response({'error': 'Некорректные параметры'}, status=status.HTTP_400_BAD_REQUEST)
+
         poll = get_object_or_404(Poll, id=id)
 
         # Проверка прав
@@ -288,23 +316,34 @@ class PollResultsView(APIView):
                     'total_votes': 0,
                     'average_point': {
                         'lat': 0,
-                        'lan': 0,
+                        'lon': 0,
                     },
                     'most_popular_categories': [],
                 },
                 'recommended_places': []
             })
+
         categories = results_data['most_popular_categories']
         lat = results_data['average_point']['lat']
         lon = results_data['average_point']['lon']
 
         recommended_places = []
         for category in categories:
-            data = get_places_with_meta(lat, lon, category)
+            data = get_places_with_meta(
+                base_lat=lat,
+                base_lon=lon,
+                category=category,
+                radius=radius,
+                min_rating=min_rating
+            )
             recommended_places.append(data)
 
         return Response({
-            'results': results_data,
+            'results': {
+                **results_data,
+                'radius': radius,
+                'min_rating': min_rating
+            },
             'recommended_places': recommended_places
         })
 

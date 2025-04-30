@@ -12,7 +12,7 @@ class NearbyPlacesView(APIView):
             openapi.Parameter('lat', openapi.IN_QUERY, description="Широта", type=openapi.TYPE_NUMBER, required=True),
             openapi.Parameter('lon', openapi.IN_QUERY, description="Долгота", type=openapi.TYPE_NUMBER, required=True),
             openapi.Parameter('radius', openapi.IN_QUERY, description="Радиус поиска в метрах",
-                              type=openapi.TYPE_INTEGER, default=500),
+                              type=openapi.TYPE_INTEGER, default=1000),
             openapi.Parameter('category', openapi.IN_QUERY, description="Категория мест", type=openapi.TYPE_STRING,
                               default='кафе'),
             openapi.Parameter('min_rating', openapi.IN_QUERY, description="Минимальный рейтинг",
@@ -26,7 +26,7 @@ class NearbyPlacesView(APIView):
                         "search_point": {
                             "lat": 55.7558,
                             "lon": 37.6173,
-                            "radius": 500
+                            "radius": 1000
                         },
                         "places": [
                             {
@@ -56,7 +56,7 @@ class NearbyPlacesView(APIView):
         try:
             base_lat = float(request.GET.get('lat'))
             base_lon = float(request.GET.get('lon'))
-            radius = int(request.GET.get('radius', 500))
+            radius = int(request.GET.get('radius', 1000))
             category = request.GET.get('category', 'кафе')
             min_rating = float(request.GET.get('min_rating', 4.0))
         except (TypeError, ValueError) as e:

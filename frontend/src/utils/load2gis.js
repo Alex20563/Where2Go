@@ -44,6 +44,5 @@ export const load2GIS = () => {
         script.onerror = () => reject(new Error("Ошибка загрузки скрипта 2GIS"));
         document.body.appendChild(script);
     });
-
     return loadingPromise;
 };

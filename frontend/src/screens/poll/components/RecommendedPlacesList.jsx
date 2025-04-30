@@ -11,7 +11,6 @@ const RecommendedPlacesList = ({ recommendedPlaces, categories }) => {
                         Категория: {categories[index] || 'неизвестно'}
                     </Card.Header>
                     <Card.Body>
-                        <p>Точка поиска: {rec.search_point.lat}, {rec.search_point.lon} (радиус: {rec.search_point.radius} м)</p>
                         {rec.places.length === 0 ? (
                             <p>Нет подходящих мест</p>
                         ) : (
