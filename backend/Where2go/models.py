@@ -1,82 +1,74 @@
 from collections import Counter
 from datetime import timedelta
 
+from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.contrib.auth.models import AbstractUser, User
 from django.utils import timezone
-
 
 # Create your models here.
 
+
 class CustomUser(AbstractUser):
     two_factor_secret = models.CharField(max_length=16, blank=True, null=True)
-    verification_code = models.CharField(max_length=10, blank=True, null=True)  # Поле для хранения кода 2FA
+    verification_code = models.CharField(
+        max_length=10, blank=True, null=True
+    )  # Поле для хранения кода 2FA
     friends = models.ManyToManyField(
-        'self',
-        symmetrical=True,
-        blank=True,
-        verbose_name='Друзья'
+        "self", symmetrical=True, blank=True, verbose_name="Друзья"
     )
     email = models.EmailField(
         unique=True,
         max_length=254,
-        verbose_name='email address',
+        verbose_name="email address",
         error_messages={
-            'unique': 'A user with that email already exists.',
-        }
+            "unique": "A user with that email already exists.",
+        },
     )
 
     def __str__(self):
         return self.username
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
 
 class Group(models.Model):
-    name = models.CharField(max_length=100, verbose_name='Название группы')
+    name = models.CharField(max_length=100, verbose_name="Название группы")
     admin = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='admin_groups',
-        verbose_name='Администратор'
+        related_name="admin_groups",
+        verbose_name="Администратор",
     )
     members = models.ManyToManyField(
-        CustomUser,
-        related_name='member_groups',
-        verbose_name='Участники'
+        CustomUser, related_name="member_groups", verbose_name="Участники"
     )
     created_at = models.DateTimeField(
-        default=timezone.now,
-        verbose_name='Дата создания'
+        default=timezone.now, verbose_name="Дата создания"
     )
-    description = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='Описание'
-    )
+    description = models.TextField(blank=True, null=True, verbose_name="Описание")
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'Группа'
-        verbose_name_plural = 'Группы'
-        ordering = ['-created_at']
+        verbose_name = "Группа"
+        verbose_name_plural = "Группы"
+        ordering = ["-created_at"]
 
 
 class PollOption(models.Model):
-    text = models.CharField(max_length=200, verbose_name='Вариант ответа')
-    votes = models.IntegerField(default=0, verbose_name='Количество голосов')
+    text = models.CharField(max_length=200, verbose_name="Вариант ответа")
+    votes = models.IntegerField(default=0, verbose_name="Количество голосов")
 
     def __str__(self):
         return self.text
 
     class Meta:
-        verbose_name = 'Вариант ответа'
-        verbose_name_plural = 'Варианты ответов'
+        verbose_name = "Вариант ответа"
+        verbose_name_plural = "Варианты ответов"
 
 
 def default_end_time():
@@ -84,26 +76,40 @@ def default_end_time():
 
 
 class Poll(models.Model):
-    group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='polls', verbose_name='Группа')
-    creator = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='created_polls', verbose_name='Создатель')
-    question = models.CharField(max_length=255, verbose_name='Вопрос')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
-    end_time = models.DateTimeField(verbose_name='Время окончания', default=default_end_time, null=True, blank=True)
-    is_active = models.BooleanField(default=True, verbose_name='Активен')
-    voted_users = models.ManyToManyField('CustomUser', related_name='voted_polls', blank=True, verbose_name='Проголосовавшие')
+    group = models.ForeignKey(
+        "Group", on_delete=models.CASCADE, related_name="polls", verbose_name="Группа"
+    )
+    creator = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.CASCADE,
+        related_name="created_polls",
+        verbose_name="Создатель",
+    )
+    question = models.CharField(max_length=255, verbose_name="Вопрос")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    end_time = models.DateTimeField(
+        verbose_name="Время окончания", default=default_end_time, null=True, blank=True
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    voted_users = models.ManyToManyField(
+        "CustomUser",
+        related_name="voted_polls",
+        blank=True,
+        verbose_name="Проголосовавшие",
+    )
 
-    coordinates = models.JSONField(default=list, blank=True, verbose_name='Координаты')
+    coordinates = models.JSONField(default=list, blank=True, verbose_name="Координаты")
     voted_categories = ArrayField(
         models.CharField(max_length=100),
         default=list,
         blank=True,
-        verbose_name='Выбранные категории'
+        verbose_name="Выбранные категории",
     )
 
     class Meta:
-        verbose_name = 'Опрос'
-        verbose_name_plural = 'Опросы'
-        ordering = ['-created_at']
+        verbose_name = "Опрос"
+        verbose_name_plural = "Опросы"
+        ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.question} ({self.group.name})"
@@ -115,19 +121,16 @@ class Poll(models.Model):
     def get_results(self):
         if not self.coordinates:
             return {
-                'total_votes': 0,
-                'average_point': None,
-                'most_popular_categories': None
+                "total_votes": 0,
+                "average_point": None,
+                "most_popular_categories": None,
             }
 
         total_votes = len(self.coordinates)
-        total_lat = sum(coord['lat'] for coord in self.coordinates)
-        total_lon = sum(coord['lon'] for coord in self.coordinates)
+        total_lat = sum(coord["lat"] for coord in self.coordinates)
+        total_lon = sum(coord["lon"] for coord in self.coordinates)
 
-        average_point = {
-            'lat': total_lat / total_votes,
-            'lon': total_lon / total_votes
-        }
+        average_point = {"lat": total_lat / total_votes, "lon": total_lon / total_votes}
 
         categories = [
             cat["value"]
@@ -139,25 +142,25 @@ class Poll(models.Model):
         counter = Counter(categories)
         if counter:
             max_votes = max(counter.values())
-            top_categories = sorted([
-                cat for cat, count in counter.items() if count == max_votes
-            ])
+            top_categories = sorted(
+                [cat for cat, count in counter.items() if count == max_votes]
+            )
         else:
             top_categories = []
 
         return {
-            'total_votes': total_votes,
-            'average_point': average_point,
-            'most_popular_categories': top_categories
+            "total_votes": total_votes,
+            "average_point": average_point,
+            "most_popular_categories": top_categories,
         }
 
     def calculate_average_point(self):
         if not self.coordinates:
             return None
-        total_lat = sum(coord['lat'] for coord in self.coordinates)
-        total_lon = sum(coord['lon'] for coord in self.coordinates)
+        total_lat = sum(coord["lat"] for coord in self.coordinates)
+        total_lon = sum(coord["lon"] for coord in self.coordinates)
         count = len(self.coordinates)
-        return {'lat': total_lat / count, 'lon': total_lon / count}
+        return {"lat": total_lat / count, "lon": total_lon / count}
 
     def most_popular_category(self):
         if not self.voted_categories:

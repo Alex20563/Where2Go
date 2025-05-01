@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Where2go', '0001_initial'),
+        ("Where2go", "0001_initial"),
     ]
 
     operations = [
@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
                     ON public."Where2go_customuser"
                     USING GIN (to_tsvector('simple', username || ' ' || email));
                 """,
-            reverse_sql="DROP INDEX IF EXISTS user_search_idx;"
+            reverse_sql="DROP INDEX IF EXISTS user_search_idx;",
         ),
     ]

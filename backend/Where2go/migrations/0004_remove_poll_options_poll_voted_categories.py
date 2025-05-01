@@ -7,17 +7,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Where2go', '0003_alter_poll_end_time'),
+        ("Where2go", "0003_alter_poll_end_time"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='poll',
-            name='options',
+            model_name="poll",
+            name="options",
         ),
         migrations.AddField(
-            model_name='poll',
-            name='voted_categories',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=100), blank=True, default=list, size=None, verbose_name='Выбранные категории'),
+            model_name="poll",
+            name="voted_categories",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(max_length=100),
+                blank=True,
+                default=list,
+                size=None,
+                verbose_name="Выбранные категории",
+            ),
         ),
     ]

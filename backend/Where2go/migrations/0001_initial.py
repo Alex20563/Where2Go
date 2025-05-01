@@ -13,92 +13,295 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
+        ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Group',
+            name="Group",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, verbose_name='Название группы')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='Дата создания')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='Описание')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=100, verbose_name="Название группы"),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "description",
+                    models.TextField(blank=True, null=True, verbose_name="Описание"),
+                ),
             ],
             options={
-                'verbose_name': 'Группа',
-                'verbose_name_plural': 'Группы',
-                'ordering': ['-created_at'],
+                "verbose_name": "Группа",
+                "verbose_name_plural": "Группы",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='PollOption',
+            name="PollOption",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.CharField(max_length=200, verbose_name='Вариант ответа')),
-                ('votes', models.IntegerField(default=0, verbose_name='Количество голосов')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "text",
+                    models.CharField(max_length=200, verbose_name="Вариант ответа"),
+                ),
+                (
+                    "votes",
+                    models.IntegerField(default=0, verbose_name="Количество голосов"),
+                ),
             ],
             options={
-                'verbose_name': 'Вариант ответа',
-                'verbose_name_plural': 'Варианты ответов',
+                "verbose_name": "Вариант ответа",
+                "verbose_name_plural": "Варианты ответов",
             },
         ),
         migrations.CreateModel(
-            name='CustomUser',
+            name="CustomUser",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
-                ('username', models.CharField(error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.', max_length=150, unique=True, validators=[django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='username')),
-                ('first_name', models.CharField(blank=True, max_length=150, verbose_name='first name')),
-                ('last_name', models.CharField(blank=True, max_length=150, verbose_name='last name')),
-                ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
-                ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('two_factor_secret', models.CharField(blank=True, max_length=16, null=True)),
-                ('verification_code', models.CharField(blank=True, max_length=10, null=True)),
-                ('email', models.EmailField(error_messages={'unique': 'A user with that email already exists.'}, max_length=254, unique=True, verbose_name='email address')),
-                ('friends', models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL, verbose_name='Друзья')),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("password", models.CharField(max_length=128, verbose_name="password")),
+                (
+                    "last_login",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="last login"
+                    ),
+                ),
+                (
+                    "is_superuser",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates that this user has all permissions without explicitly assigning them.",
+                        verbose_name="superuser status",
+                    ),
+                ),
+                (
+                    "username",
+                    models.CharField(
+                        error_messages={
+                            "unique": "A user with that username already exists."
+                        },
+                        help_text="Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                        max_length=150,
+                        unique=True,
+                        validators=[
+                            django.contrib.auth.validators.UnicodeUsernameValidator()
+                        ],
+                        verbose_name="username",
+                    ),
+                ),
+                (
+                    "first_name",
+                    models.CharField(
+                        blank=True, max_length=150, verbose_name="first name"
+                    ),
+                ),
+                (
+                    "last_name",
+                    models.CharField(
+                        blank=True, max_length=150, verbose_name="last name"
+                    ),
+                ),
+                (
+                    "is_staff",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether the user can log into this admin site.",
+                        verbose_name="staff status",
+                    ),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
+                        verbose_name="active",
+                    ),
+                ),
+                (
+                    "date_joined",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date joined"
+                    ),
+                ),
+                (
+                    "two_factor_secret",
+                    models.CharField(blank=True, max_length=16, null=True),
+                ),
+                (
+                    "verification_code",
+                    models.CharField(blank=True, max_length=10, null=True),
+                ),
+                (
+                    "email",
+                    models.EmailField(
+                        error_messages={
+                            "unique": "A user with that email already exists."
+                        },
+                        max_length=254,
+                        unique=True,
+                        verbose_name="email address",
+                    ),
+                ),
+                (
+                    "friends",
+                    models.ManyToManyField(
+                        blank=True, to=settings.AUTH_USER_MODEL, verbose_name="Друзья"
+                    ),
+                ),
+                (
+                    "groups",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="The groups this user belongs to. A user will get all permissions granted to each of their groups.",
+                        related_name="user_set",
+                        related_query_name="user",
+                        to="auth.group",
+                        verbose_name="groups",
+                    ),
+                ),
+                (
+                    "user_permissions",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="Specific permissions for this user.",
+                        related_name="user_set",
+                        related_query_name="user",
+                        to="auth.permission",
+                        verbose_name="user permissions",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Пользователь',
-                'verbose_name_plural': 'Пользователи',
+                "verbose_name": "Пользователь",
+                "verbose_name_plural": "Пользователи",
             },
             managers=[
-                ('objects', django.contrib.auth.models.UserManager()),
+                ("objects", django.contrib.auth.models.UserManager()),
             ],
         ),
         migrations.CreateModel(
-            name='Poll',
+            name="Poll",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('question', models.CharField(max_length=255, verbose_name='Вопрос')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('end_time', models.DateTimeField(blank=True, null=True, verbose_name='Время окончания')),
-                ('is_active', models.BooleanField(default=True, verbose_name='Активен')),
-                ('coordinates', models.JSONField(blank=True, default=list, verbose_name='Координаты')),
-                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='polls', to='Where2go.group', verbose_name='Группа')),
-                ('options', models.ManyToManyField(related_name='polls', to='Where2go.polloption', verbose_name='Варианты ответов')),
-                ('creator', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_polls', to=settings.AUTH_USER_MODEL, verbose_name='Создатель')),
-                ('voted_users', models.ManyToManyField(blank=True, related_name='voted_polls', to=settings.AUTH_USER_MODEL, verbose_name='Проголосовавшие')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("question", models.CharField(max_length=255, verbose_name="Вопрос")),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "end_time",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Время окончания"
+                    ),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(default=True, verbose_name="Активен"),
+                ),
+                (
+                    "coordinates",
+                    models.JSONField(
+                        blank=True, default=list, verbose_name="Координаты"
+                    ),
+                ),
+                (
+                    "group",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="polls",
+                        to="Where2go.group",
+                        verbose_name="Группа",
+                    ),
+                ),
+                (
+                    "options",
+                    models.ManyToManyField(
+                        related_name="polls",
+                        to="Where2go.polloption",
+                        verbose_name="Варианты ответов",
+                    ),
+                ),
+                (
+                    "creator",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="created_polls",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Создатель",
+                    ),
+                ),
+                (
+                    "voted_users",
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name="voted_polls",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Проголосовавшие",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Опрос',
-                'verbose_name_plural': 'Опросы',
-                'ordering': ['-created_at'],
+                "verbose_name": "Опрос",
+                "verbose_name_plural": "Опросы",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.AddField(
-            model_name='group',
-            name='admin',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='admin_groups', to=settings.AUTH_USER_MODEL, verbose_name='Администратор'),
+            model_name="group",
+            name="admin",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="admin_groups",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="Администратор",
+            ),
         ),
         migrations.AddField(
-            model_name='group',
-            name='members',
-            field=models.ManyToManyField(related_name='member_groups', to=settings.AUTH_USER_MODEL, verbose_name='Участники'),
+            model_name="group",
+            name="members",
+            field=models.ManyToManyField(
+                related_name="member_groups",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="Участники",
+            ),
         ),
     ]

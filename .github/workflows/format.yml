@@ -1,0 +1,29 @@
+name: Format Check
+
+on: [push, pull_request]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install formating dependencies
+        run: |
+          pip install black isort autoflake
+
+      - name: Check black
+        run: black .
+
+      - name: Check isort
+        run: isort .
+
+      - name: Check autoflake
+        run: |
+          autoflake --remove-all-unused-imports --remove-unused-variables -r .
