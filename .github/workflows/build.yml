@@ -54,4 +54,4 @@ jobs:
         working-directory: backend
 
       - name: Show success message
-        run: echo "Сборка завершена успешно"
+        run: echo "Сборка завершена успешно."
