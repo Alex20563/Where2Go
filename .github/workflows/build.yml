@@ -28,7 +28,7 @@ jobs:
       - name: Build frontend
         run: |
           if [ -f package.json ] && grep -q '"build"' package.json; then
-            npm run build
+            CI='' npm run build
           else
             echo "No build step defined in package.json"
           fi
