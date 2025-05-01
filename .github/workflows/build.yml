@@ -23,6 +23,7 @@ jobs:
 
       - name: Install frontend dependencies
         run: npm install
+        working-directory: frontend
 
       - name: Build frontend
         run: |
@@ -31,23 +32,26 @@ jobs:
           else
             echo "No build step defined in package.json"
           fi
+        working-directory: frontend
 
       # Установка Python и pip-зависимостей
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
+        
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+        working-directory: backend
 
       # Запуск Django-команд
       - name: Migrations
         run: |
           python manage.py makemigrations
           python manage.py migrate
+        working-directory: backend
 
       - name: Show success message
         run: echo "Сборка завершена успешно"
