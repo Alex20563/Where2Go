@@ -9,7 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      DGIS_API_KEY: ${{ secrets.DGIS_API_KEY }}
+      REACT_APP_RECAPTCHA_SITE_KEY: ${{secrets.REACT_APP_RECAPTCHA_SITE_KEY}}
+      REACT_APP_API_BASE_URL: ${{secrets.REACT_APP_API_BASE_URL}}
+      
     steps:
       # Получение кода
       - name: Checkout repository
