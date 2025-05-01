@@ -76,7 +76,7 @@ jobs:
 
       # Статические анализаторы кода
       - name: Run flake8 (Python static analysis)
-        run: flake8 backend/
+        run: CI='' flake8 backend/
 
       - name: Run ESLint (JS static analysis)
         run: CI='' npm run lint
