@@ -3,6 +3,7 @@
 /venv/
 /frontend_test/node_modules/
 /backend/.vs/
+/backend/node_modules/
 /.venv/
 /frontend/node_modules/
 /frontend/dist/
