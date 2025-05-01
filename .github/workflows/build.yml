@@ -9,6 +9,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: where2go_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: 123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DGIS_API_KEY: ${{ secrets.DGIS_API_KEY }}
       REACT_APP_RECAPTCHA_SITE_KEY: ${{secrets.REACT_APP_RECAPTCHA_SITE_KEY}}
