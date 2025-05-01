@@ -149,9 +149,6 @@ class PollListView(ListAPIView):
         ],
         responses={200: PollSerializer(many=True), 404: "Группа не найдена"},
     )
-    #    def get(self, request, *args, **kwargs):
-    #        return super().get(request, *args, **kwargs)
-
     def get_queryset(self):
         group_id = self.kwargs["group_id"]
         return Poll.objects.filter(group_id=group_id)
@@ -228,7 +225,7 @@ class VotePollView(APIView):
 
         # Проверяем, что lat и lon являются числами
         if not isinstance(coordinates["lat"], (int, float)) or not isinstance(
-            coordinates["lon"], (int, float)
+                coordinates["lon"], (int, float)
         ):
             return Response({"error": "lat и lon должны быть числами"}, status=400)
 
@@ -253,7 +250,7 @@ class VotePollView(APIView):
                 )
 
             if not isinstance(category["label"], str) or not isinstance(
-                category["value"], str
+                    category["value"], str
             ):
                 return Response(
                     {"error": "label и value должны быть строками"}, status=400
@@ -342,10 +339,10 @@ class PollResultsView(APIView):
 
         # Проверка прав
         if not (
-            poll.is_expired
-            or not poll.is_active
-            or request.user == poll.creator
-            or request.user == poll.group.admin
+                poll.is_expired
+                or not poll.is_active
+                or request.user == poll.creator
+                or request.user == poll.group.admin
         ):
             return Response(
                 {"error": "Результаты будут доступны после завершения опроса."},

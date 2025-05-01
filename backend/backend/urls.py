@@ -27,8 +27,6 @@ from Where2go.views.admin_views import (
     GroupEditView,
     GroupListView,
     UserBanView,
-    UserDeleteView,
-    UserListView,
     UserSessionDeleteView,
 )
 from Where2go.views.auth_views import (

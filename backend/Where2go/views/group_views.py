@@ -141,7 +141,8 @@ class GroupView(APIView):
                 member = get_object_or_404(CustomUser, id=member_id)
                 send_mail(
                     "Приглашение в группу",
-                    f"Вы были добавлены в группу: {group.name}. Ссылка на группу: http://localhost:8000/groups/{group.id}/",
+                    f"Вы были добавлены в группу: {group.name}. \
+                    Ссылка на группу: http://localhost:8000/groups/{group.id}/",
                     "where2go-verification@yandex.ru",
                     [member.email],
                     fail_silently=False,
