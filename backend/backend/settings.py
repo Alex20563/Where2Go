@@ -32,7 +32,7 @@ SECRET_KEY = "django-insecure-fvb=^ow_!8ac@)a9fs_-dvh#qv66n7h193i_jbx4#erde$_$7i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['YOUR_ADDRESS']
 
 
 # Application definition
@@ -108,12 +108,16 @@ DATABASES = {
     }
 }
 
+# YOUR_ADDRESS -- раскомментить эту строку
 # CORS_ALLOW_ALL_ORIGINS = True
+
+# --- Закомментить этот блок ---
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:8081",
     "http://localhost:3000",
 ]
+# ------------------------------
 
 CORS_ALLOW_HEADERS = [
     "accept",
