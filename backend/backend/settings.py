@@ -99,14 +99,15 @@ REST_FRAMEWORK = {
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",  # Для PostgreSQL
-        "NAME": "where2go_db",  # Имя  базы данных
-        "USER": "test_user",  # Имя пользователя
-        "PASSWORD": "123",  # Пароль
-        "HOST": "localhost",  # Хост (обычно localhost)
-        "PORT": "5432",  # Порт (по умолчанию 5432 для PostgreSQL)
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "where2go_db"),
+        "USER": os.getenv("POSTGRES_USER", "test_user"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "123"),
+        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+        "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
 }
+
 # CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
