@@ -209,5 +209,3 @@ API для приложения Where2Go.
         "license": {"name": "BSD License"},
     },
 }
-
-DGIS_API_KEY = os.environ["DGIS_API_KEY"]
