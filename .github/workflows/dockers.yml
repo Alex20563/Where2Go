@@ -18,6 +18,9 @@ jobs:
         run: |
           docker compose --version
 
+      - name: Create .env file for backend
+        run: echo "${{ secrets.BACKEND_ENV_CONTENTS }}" > backend/.env
+
       - name: Build and start containers
         run: |
           docker compose up -d --build
