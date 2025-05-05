@@ -21,6 +21,8 @@ from django.views.generic import TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from django.urls import path, include
+
 
 from Where2go.views.admin_views import (
     GroupDeleteView,
@@ -81,8 +83,11 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
+
 # LoginView,  UserCreate
 urlpatterns = [
+    path("", include('django_prometheus.urls')),
+
     path("admin/", admin.site.urls),
     path("api/auth/register/", UserCreate.as_view(), name="register"),
     path("api/auth/login-2fa", LoginView2FA.as_view(), name="login-2fa"),

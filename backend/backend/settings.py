@@ -32,8 +32,7 @@ SECRET_KEY = "django-insecure-fvb=^ow_!8ac@)a9fs_-dvh#qv66n7h193i_jbx4#erde$_$7i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['backend', 'localhost']
 
 # Application definition
 
@@ -50,9 +49,11 @@ INSTALLED_APPS = [
     "Where2go",
     "corsheaders",
     "drf_yasg",
+    "django_prometheus",
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -141,7 +143,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -153,7 +154,6 @@ TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -177,7 +177,6 @@ EMAIL_PORT = 587  # Обычно 587 для TLS
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "where2go-verification@yandex.ru"  # login fro mail where.2go
 EMAIL_HOST_PASSWORD = "isywidndmwygtbut"  # пасс для почты
-
 
 # Настройки админ-панели
 JAZZMIN_SETTINGS = {

@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   backend:
+    container_name: backend
     environment:
       POSTGRES_HOST: db
     build:
@@ -16,15 +17,13 @@ services:
     depends_on:
       - db
 
-
   frontend:
+    container_name: frontend
     build:
       context: .
       dockerfile: frontend/Dockerfile
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
     stdin_open: true
     tty: true
 
@@ -39,5 +38,57 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - node-exporter
+      - cadvisor
+      - blackbox-exporter
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "9100:9100"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    privileged: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter
+    ports:
+      - "9115:9115"
+
+  process-exporter:
+    image: ncabatoff/process-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - ./monitoring/process-exporter:/config
+    command:
+      - --config.path=/config/config.yml
+    ports:
+      - "9256:9256"
+
+
 volumes:
   postgres_data:
+  grafana_data:
