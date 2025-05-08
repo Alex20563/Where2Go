@@ -13,8 +13,8 @@ services:
     env_file:
       - backend/.env
     volumes:
-      - django_logs:./backend/logs
       - ./backend:/app
+      - django_logs:/app/logs
     depends_on:
       - db
 
@@ -92,7 +92,8 @@ services:
   loki:
     image: grafana/loki
     volumes:
-      - django_logs:./backend/logs
+      - ./backend:/app
+      - django_logs:/app/logs
     ports:
       - "3100:3100"
 
@@ -100,7 +101,8 @@ services:
     image: grafana/promtail
     volumes:
       - ./monitoring/promtail-config.yaml:/etc/promtail/promtail.yaml
-      - django_logs:./backend/logs
+      - ./backend:/app
+      - django_logs:/app/logs
       - /tmp:/tmp
     command: -config.file=/etc/promtail/promtail.yaml
     depends_on:
