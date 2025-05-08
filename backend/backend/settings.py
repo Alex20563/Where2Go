@@ -211,6 +211,14 @@ API для приложения Where2Go.
 
 DGIS_API_KEY = os.getenv("DGIS_API_KEY")
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+LOG_DIR = BASE_DIR / 'logs'
+LOG_FILE = LOG_DIR / 'failed_login.log'
+
+os.makedirs(LOG_DIR, exist_ok=True)
+if not LOG_FILE.exists():
+    LOG_FILE.touch()
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -223,7 +231,7 @@ LOGGING = {
     'handlers': {
         'login_file': {
             'class': 'logging.FileHandler',
-            'filename': '/var/log/django/failed_login.log',
+            'filename':  str(LOG_FILE),
             'formatter': 'verbose',
         },
     },
