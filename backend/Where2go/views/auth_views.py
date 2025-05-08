@@ -13,6 +13,9 @@ from rest_framework.views import APIView
 
 from ..management.captcha import verify_captcha
 from ..models import CustomUser
+import logging
+
+logger = logging.getLogger('django.security')
 
 
 class LoginView(APIView):
@@ -66,19 +69,20 @@ class LoginView(APIView):
         email = request.data.get("email")
         password = request.data.get("password")
 
-        # Аутентифицируем пользователя по email (а не username)
+        ip = request.META.get("REMOTE_ADDR", "unknown")
         user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            # Генерируем JWT-токены
             refresh = Token.objects.get_or_create(user=user)
             return Response(
                 {
-                    "access": str(refresh.access_token),  # Access Token для авторизации
-                    "refresh": str(refresh),  # Refresh Token для обновления
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
                 },
                 status=status.HTTP_200_OK,
             )
+
+        logger.warning(f"Login failed for email: {email} from IP: {ip}")
 
         return Response(
             {"error": "Неверный email или пароль"}, status=status.HTTP_401_UNAUTHORIZED
@@ -172,6 +176,8 @@ class LoginView2FA(APIView):
                 return Response(
                     {"error": "Неверный код 2FA."}, status=status.HTTP_400_BAD_REQUEST
                 )
+        ip = request.META.get("REMOTE_ADDR", "unknown")
+        logger.warning(f"Login failed for username: {username} from IP: {ip}")
 
         return Response(
             {"error": "Неверные учетные данные."}, status=status.HTTP_401_UNAUTHORIZED

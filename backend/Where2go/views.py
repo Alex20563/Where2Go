@@ -1,3 +1,4 @@
+import logging
 import random
 
 from django.contrib.auth import authenticate, update_session_auth_hash
@@ -16,6 +17,8 @@ from .serializers import GroupSerializer, UserSerializer
 
 # Create your views here.
 
+logger = logging.getLogger('django.security')
+
 
 class LoginView(APIView):
     def post(self, request):
@@ -23,6 +26,7 @@ class LoginView(APIView):
         password = request.data.get("password")
         code = request.data.get("code")  # Получаем код 2FA из запроса
         user = authenticate(username=username, password=password)
+        ip = request.META.get("REMOTE_ADDR", "unknown")
 
         if user is not None:
             # Если код 2FA не был предоставлен, генерируем и отправляем его
@@ -63,6 +67,8 @@ class LoginView(APIView):
                 return Response(
                     {"error": "Неверный код 2FA."}, status=status.HTTP_400_BAD_REQUEST
                 )
+
+        logger.warning(f"Login failed for email: {username} from IP: {ip}")
 
         return Response(
             {"error": "Неверные учетные данные."}, status=status.HTTP_401_UNAUTHORIZED

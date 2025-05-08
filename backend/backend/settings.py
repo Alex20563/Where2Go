@@ -210,3 +210,29 @@ API для приложения Where2Go.
 }
 
 DGIS_API_KEY = os.getenv("DGIS_API_KEY")
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} [{levelname}] {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'login_file': {
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/django/failed_login.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.security': {
+            'handlers': ['login_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+}
+
