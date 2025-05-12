@@ -16,8 +16,8 @@ jobs:
 
       - name: Prepare SSL files
         run: |
-          echo "${{ secrets.SSL_CRT_BASE64 }}" | base64 -d > frontend/server.crt
-          echo "${{ secrets.SSL_KEY_BASE64 }}" | base64 -d > frontend/server.key
+          echo "${{ secrets.SSL_CRT_BASE64 }}" | base64 -d > server.crt
+          echo "${{ secrets.SSL_KEY_BASE64 }}" | base64 -d > server.key
 
       - name: Set up Docker Compose
         run: |
