@@ -244,3 +244,14 @@ LOGGING = {
         },
     },
 }
+
+
+# Защита  уязвимости X-Frame-Options
+X_FRAME_OPTIONS = 'DENY'
+
+# Защита уязвимости Strict-Transport-Security
+SECURE_HSTS_SECONDS = 31536000  # 1 год
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+SECURE_SSL_REDIRECT = True
