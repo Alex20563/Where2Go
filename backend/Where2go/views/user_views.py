@@ -347,13 +347,13 @@ class TemporaryAccessLinkView(APIView):
         expires_at = timezone.now() + timedelta(hours=duration_hours)
 
         # Создание временной ссылки
-        access_link = TemporaryAccessLink.objects.create(
-            user=request.user,
-            token=token,
-            expires_at=expires_at,
-            content_type=content_type,
-            content_id=content_id,
-        )
+        # access_link = TemporaryAccessLink.objects.create(
+        #     user=request.user,
+        #     token=token,
+        #     expires_at=expires_at,
+        #     content_type=content_type,
+        #     content_id=content_id,
+        # )
 
         return Response(
             {"token": token, "expires_at": expires_at, "link": f"/api/access/{token}"},
