@@ -32,7 +32,7 @@ SECRET_KEY = "django-insecure-fvb=^ow_!8ac@)a9fs_-dvh#qv66n7h193i_jbx4#erde$_$7i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['backend', 'localhost', '127.0.0.1', '0.0.0.0', '172.19.0.11']
+ALLOWED_HOSTS = ["backend", "localhost", "127.0.0.1", "0.0.0.0", "172.19.0.11"]
 
 # Application definition
 
@@ -221,34 +221,34 @@ API для приложения Where2Go.
 DGIS_API_KEY = os.getenv("DGIS_API_KEY")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-LOG_DIR = BASE_DIR / 'logs'
-LOG_FILE = LOG_DIR / 'failed_login.log'
+LOG_DIR = BASE_DIR / "logs"
+LOG_FILE = LOG_DIR / "failed_login.log"
 
 os.makedirs(LOG_DIR, exist_ok=True)
 if not LOG_FILE.exists():
     LOG_FILE.touch()
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{asctime} [{levelname}] {name} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} [{levelname}] {name} {message}",
+            "style": "{",
         },
     },
-    'handlers': {
-        'login_file': {
-            'class': 'logging.FileHandler',
-            'filename':  str(LOG_FILE),
-            'formatter': 'verbose',
+    "handlers": {
+        "login_file": {
+            "class": "logging.FileHandler",
+            "filename": str(LOG_FILE),
+            "formatter": "verbose",
         },
     },
-    'loggers': {
-        'django.security': {
-            'handlers': ['login_file'],
-            'level': 'WARNING',
-            'propagate': False,
+    "loggers": {
+        "django.security": {
+            "handlers": ["login_file"],
+            "level": "WARNING",
+            "propagate": False,
         },
     },
 }
@@ -270,55 +270,57 @@ ACCOUNT_LOGOUT_ON_GET = True
 
 # VK OAuth settings
 SOCIALACCOUNT_PROVIDERS = {
-    'vk': {
-        'APP': {
-            'client_id': os.getenv('VK_CLIENT_ID', ''),
-            'secret': os.getenv('VK_SECRET_KEY', ''),
-            'key': os.getenv('VK_API_KEY', '')
+    "vk": {
+        "APP": {
+            "client_id": os.getenv("VK_CLIENT_ID", ""),
+            "secret": os.getenv("VK_SECRET_KEY", ""),
+            "key": os.getenv("VK_API_KEY", ""),
         },
-        'SCOPE': ['email'],
-        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
-        'METHOD': 'oauth2',
+        "SCOPE": ["email"],
+        "AUTH_PARAMS": {"auth_type": "reauthenticate"},
+        "METHOD": "oauth2",
     }
 }
 
 # Google OAuth settings
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'APP': {
-            'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
-            'secret': os.getenv('GOOGLE_SECRET_KEY', ''),
+    "google": {
+        "APP": {
+            "client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
+            "secret": os.getenv("GOOGLE_SECRET_KEY", ""),
         },
-        'SCOPE': [
-            'profile',
-            'email',
+        "SCOPE": [
+            "profile",
+            "email",
         ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
+        "AUTH_PARAMS": {
+            "access_type": "online",
+        },
     }
 }
 
 # Настройки для тестирования OAuth
-#if DEBUG:
+# if DEBUG:
 #    SOCIALACCOUNT_PROVIDERS['vk']['APP']['client_id'] = os.getenv('VK_CLIENT_ID', '')
 #    SOCIALACCOUNT_PROVIDERS['vk']['APP']['secret'] = os.getenv('VK_SECRET_KEY', '')
 #    SOCIALACCOUNT_PROVIDERS['vk']['APP']['key'] = os.getenv('VK_API_KEY', '')
 
 # Настройки для OAuth
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_STORE_TOKENS = True
 
 # Настройки для callback URL
-CALLBACK_URL = os.getenv('CALLBACK_URL', 'https://localhost:8000/accounts/google/login/callback/')
+CALLBACK_URL = os.getenv(
+    "CALLBACK_URL", "https://localhost:8000/accounts/google/login/callback/"
+)
 
 # Защита  уязвимости X-Frame-Options
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = "DENY"
 
 # Защита уязвимости Strict-Transport-Security
 SECURE_HSTS_SECONDS = 31536000  # 1 год
