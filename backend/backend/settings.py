@@ -111,7 +111,7 @@ REST_FRAMEWORK = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "where2go_db"),
+        "NAME": os.getenv("POSTGRES_DB", "db"),
         "USER": os.getenv("POSTGRES_USER", "test_user"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "123"),
         "HOST": os.getenv("POSTGRES_HOST", "localhost"),
@@ -276,9 +276,9 @@ ACCOUNT_LOGOUT_ON_GET = True
 SOCIALACCOUNT_PROVIDERS = {
     'vk': {
         'APP': {
-            'client_id': os.getenv('VK_CLIENT_ID', '53561168'),
-            'secret': os.getenv('VK_SECRET_KEY', 'OAS9DZWdLqoe1a8aiHXW'),
-            'key': os.getenv('VK_API_KEY', '2203014a2203014a2203014a462132461a222032203014a4a20708f43ed6761ce61f616')
+            'client_id': os.getenv('VK_CLIENT_ID', ''),
+            'secret': os.getenv('VK_SECRET_KEY', ''),
+            'key': os.getenv('VK_API_KEY', '')
         },
         'SCOPE': ['email'],
         'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
