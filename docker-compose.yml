@@ -5,6 +5,9 @@ services:
     container_name: backend
     environment:
       POSTGRES_HOST: db
+      DJANGO_SUPERUSER_USERNAME: admin
+      DJANGO_SUPERUSER_EMAIL: admin@example.com
+      DJANGO_SUPERUSER_PASSWORD: admin123
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -17,6 +20,10 @@ services:
       - django_logs:/app/logs
     depends_on:
       - db
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py createsuperuser --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
 
   frontend:
     container_name: frontend
@@ -38,6 +45,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   prometheus:
     image: prom/prometheus

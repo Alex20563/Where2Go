@@ -25,6 +25,10 @@ class CustomUser(AbstractUser):
             "unique": "A user with that email already exists.",
         },
     )
+    force_password_reset = models.BooleanField(
+        default=False,
+        verbose_name="Требуется сброс пароля"
+    )
 
     def __str__(self):
         return self.username
@@ -167,3 +171,37 @@ class Poll(models.Model):
             return None
         counter = Counter(self.voted_categories)
         return counter.most_common(1)[0][0]
+
+
+class TemporaryAccessLink(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='temporary_links')
+    token = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+    content_type = models.CharField(max_length=50)  # Тип контента (например, 'profile', 'photos' и т.д.)
+    content_id = models.IntegerField()  # ID контента, к которому предоставляется доступ
+
+    def __str__(self):
+        return f"Access link for {self.user.username} - {self.content_type}"
+
+    class Meta:
+        verbose_name = "Временная ссылка доступа"
+        verbose_name_plural = "Временные ссылки доступа"
+
+
+class UserSession(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sessions')
+    token = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_activity = models.DateTimeField(auto_now=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Session for {self.user.username} - {self.created_at}"
+
+    class Meta:
+        verbose_name = "Сессия пользователя"
+        verbose_name_plural = "Сессии пользователей"
