@@ -30,6 +30,7 @@ from Where2go.views.admin_views import (
     GroupListView,
     UserBanView,
     UserSessionDeleteView,
+    AdminUserManagementView,
 )
 from Where2go.views.auth_views import (
     ActivateUserView,
@@ -69,6 +70,17 @@ from Where2go.views.user_views import (
     UserFriendsView,
     UserListView,
     UserSearchView,
+    TemporaryAccessLinkView,
+    AccessLinkView,
+    UserSessionView,
+)
+
+from Where2go.views.oauth_views import (
+    #GoogleLoginView,
+    #FacebookLoginView,
+    VKLoginView,
+    GoogleLoginView,
+    social_auth_callback,
 )
 
 schema_view = get_schema_view(
@@ -89,6 +101,12 @@ urlpatterns = [
     path("", include('django_prometheus.urls')),
 
     path("admin/", admin.site.urls),
+
+    path("accounts/", include('allauth.urls')),  # OAuth URLs
+    path("api/auth/vk/", VKLoginView.as_view(), name="vk_login"),
+    path("api/auth/google/", GoogleLoginView.as_view(), name="google_login"),
+    path("api/auth/social/callback/", social_auth_callback, name="social_auth_callback"),
+    
     path("api/auth/register/", UserCreate.as_view(), name="register"),
     path("api/auth/login-2fa", LoginView2FA.as_view(), name="login-2fa"),
     path(
@@ -188,4 +206,15 @@ urlpatterns = [
         name="admin-user-sessions-delete",
     ),
     # path('api/admin/reset-password/<int:user_id>/', ResetPasswordView.as_view(), name='admin-reset-password'),
+    # Временные ссылки доступа
+    path('api/access-links/', TemporaryAccessLinkView.as_view(), name='access-links'),
+    path('api/access-links/<str:token>/', TemporaryAccessLinkView.as_view(), name='access-link-detail'),
+    path('api/access/<str:token>/', AccessLinkView.as_view(), name='access-link'),
+    
+    # Управление сессиями
+    path('api/sessions/', UserSessionView.as_view(), name='user-sessions'),
+    path('api/sessions/<int:session_id>/', UserSessionView.as_view(), name='user-session-detail'),
+    
+    # Административные функции
+    path('api/admin/users/<int:user_id>/manage/', AdminUserManagementView.as_view(), name='admin-user-management'),
 ]

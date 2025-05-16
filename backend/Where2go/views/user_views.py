@@ -1,5 +1,6 @@
 import random
-
+import secrets
+from datetime import timedelta
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.mail import send_mail
@@ -13,9 +14,10 @@ from rest_framework.generics import DestroyAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from ..management.captcha import verify_captcha
-from ..models import CustomUser
+from ..models import CustomUser, TemporaryAccessLink, UserSession
 from ..serializers import UserDetailSerializer, UserListSerializer, UserSerializer
 
 
@@ -190,8 +192,12 @@ class UserDeleteView(DestroyAPIView):
     lookup_field = "id"
 
     @swagger_auto_schema(
-        operation_description="Удалить пользователя",
-        responses={204: "Пользователь успешно удален"},
+        operation_description="Удаление пользователя",
+        responses={
+            204: "Пользователь успешно удален",
+            404: "Пользователь не найден",
+            403: "Нет прав для удаления пользователя"
+        }
     )
     def delete(self, request, *args, **kwargs):
         return super().delete(request, *args, **kwargs)
@@ -203,8 +209,11 @@ class UserFriendsView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_description="Получить список друзей пользователя",
-        responses={200: UserListSerializer(many=True)},
+        operation_description="Получение списка друзей пользователя",
+        responses={
+            200: UserListSerializer(many=True),
+            404: "Пользователь не найден"
+        }
     )
     def get(self, request, user_id):
         user = get_object_or_404(CustomUser, id=user_id)
@@ -216,6 +225,22 @@ class UserFriendsView(APIView):
 class GetMeView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Получение информации о текущем пользователе",
+        responses={
+            200: openapi.Response(
+                description="Информация о пользователе",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'username': openapi.Schema(type=openapi.TYPE_STRING),
+                        'email': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            )
+        }
+    )
     def get(self, request):
         user = request.user
         return Response(
@@ -234,8 +259,19 @@ class UserSearchView(APIView):
 
     @swagger_auto_schema(
         operation_description="Полнотекстовый поиск пользователей по username и email",
-        manual_parameters=[],
-        responses={200: UserListSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter(
+                'q',
+                openapi.IN_QUERY,
+                description="Поисковый запрос",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        responses={
+            200: UserListSerializer(many=True),
+            400: "Неверный формат запроса"
+        }
     )
     def get(self, request):
         query = request.query_params.get("q", "").strip()
@@ -257,3 +293,226 @@ class UserSearchView(APIView):
 
         serializer = UserListSerializer(users, many=True)
         return Response(serializer.data)
+
+
+class TemporaryAccessLinkView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Создание временной ссылки доступа",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['content_type', 'content_id'],
+            properties={
+                'content_type': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Тип контента (например, 'profile', 'photos')"
+                ),
+                'content_id': openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="ID контента"
+                ),
+                'duration_hours': openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="Срок действия ссылки в часах",
+                    default=24
+                )
+            }
+        ),
+        responses={
+            201: openapi.Response(
+                description="Ссылка создана",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'token': openapi.Schema(type=openapi.TYPE_STRING),
+                        'expires_at': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
+                        'link': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            ),
+            400: "Неверные параметры запроса"
+        }
+    )
+    def post(self, request):
+        """Создание временной ссылки доступа"""
+        content_type = request.data.get('content_type')
+        content_id = request.data.get('content_id')
+        duration_hours = request.data.get('duration_hours', 24)  # По умолчанию 24 часа
+
+        if not content_type or not content_id:
+            return Response(
+                {'error': 'Необходимо указать тип контента и его ID'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Генерация уникального токена
+        token = secrets.token_urlsafe(32)
+        expires_at = timezone.now() + timedelta(hours=duration_hours)
+
+        # Создание временной ссылки
+        access_link = TemporaryAccessLink.objects.create(
+            user=request.user,
+            token=token,
+            expires_at=expires_at,
+            content_type=content_type,
+            content_id=content_id
+        )
+
+        return Response({
+            'token': token,
+            'expires_at': expires_at,
+            'link': f"/api/access/{token}"
+        }, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(
+        operation_description="Отзыв временной ссылки доступа",
+        responses={
+            204: "Ссылка успешно отозвана",
+            404: "Ссылка не найдена"
+        }
+    )
+    def delete(self, request, token):
+        """Отзыв временной ссылки доступа"""
+        try:
+            access_link = TemporaryAccessLink.objects.get(
+                token=token,
+                user=request.user
+            )
+            access_link.is_active = False
+            access_link.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except TemporaryAccessLink.DoesNotExist:
+            return Response(
+                {'error': 'Ссылка не найдена'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class AccessLinkView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Проверка и использование временной ссылки доступа",
+        responses={
+            200: openapi.Response(
+                description="Информация о контенте",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'content_type': openapi.Schema(type=openapi.TYPE_STRING),
+                        'content_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'owner': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            ),
+            404: "Ссылка не найдена или неактивна",
+            410: "Срок действия ссылки истек"
+        }
+    )
+    def get(self, request, token):
+        """Проверка и использование временной ссылки доступа"""
+        try:
+            access_link = TemporaryAccessLink.objects.get(
+                token=token,
+                is_active=True
+            )
+
+            if timezone.now() > access_link.expires_at:
+                access_link.is_active = False
+                access_link.save()
+                return Response(
+                    {'error': 'Срок действия ссылки истек'},
+                    status=status.HTTP_410_GONE
+                )
+
+            # Здесь можно добавить логику для получения контента
+            # в зависимости от content_type и content_id
+
+            return Response({
+                'content_type': access_link.content_type,
+                'content_id': access_link.content_id,
+                'owner': access_link.user.username
+            })
+
+        except TemporaryAccessLink.DoesNotExist:
+            return Response(
+                {'error': 'Ссылка не найдена или неактивна'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class UserSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Получение списка активных сессий пользователя",
+        responses={
+            200: openapi.Response(
+                description="Список сессий",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                            'created_at': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
+                            'last_activity': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
+                            'ip_address': openapi.Schema(type=openapi.TYPE_STRING),
+                            'user_agent': openapi.Schema(type=openapi.TYPE_STRING)
+                        }
+                    )
+                )
+            )
+        }
+    )
+    def get(self, request):
+        """Получение списка активных сессий пользователя"""
+        sessions = UserSession.objects.filter(
+            user=request.user,
+            is_active=True
+        ).order_by('-last_activity')
+        
+        return Response([{
+            'id': session.id,
+            'created_at': session.created_at,
+            'last_activity': session.last_activity,
+            'ip_address': session.ip_address,
+            'user_agent': session.user_agent
+        } for session in sessions])
+
+    @swagger_auto_schema(
+        operation_description="Деактивация сессии(й) пользователя",
+        responses={
+            204: "Сессия(и) успешно деактивированы",
+            404: "Сессия не найдена"
+        }
+    )
+    def delete(self, request, session_id=None):
+        """Деактивация сессии(й) пользователя"""
+        if session_id:
+            # Деактивация конкретной сессии
+            try:
+                session = UserSession.objects.get(
+                    id=session_id,
+                    user=request.user
+                )
+                session.is_active = False
+                session.save()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except UserSession.DoesNotExist:
+                return Response(
+                    {'error': 'Сессия не найдена'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+        else:
+            # Деактивация всех сессий пользователя, кроме текущей
+            current_token = request.auth.key if request.auth else None
+            UserSession.objects.filter(
+                user=request.user,
+                is_active=True
+            ).exclude(
+                token=current_token
+            ).update(is_active=False)
+            
+            return Response(status=status.HTTP_204_NO_CONTENT)

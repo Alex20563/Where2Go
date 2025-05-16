@@ -32,7 +32,7 @@ SECRET_KEY = "django-insecure-fvb=^ow_!8ac@)a9fs_-dvh#qv66n7h193i_jbx4#erde$_$7i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['backend', 'localhost']
+ALLOWED_HOSTS = ['backend', 'localhost', '127.0.0.1', '0.0.0.0', '172.19.0.11']
 
 # Application definition
 
@@ -51,6 +51,12 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_yasg",
     "django_prometheus",
+    "django.contrib.sites",  # Required for allauth
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.vk",
+    "allauth.socialaccount.providers.google",
 ]
 
 MIDDLEWARE = [
@@ -64,6 +70,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -91,6 +98,7 @@ WSGI_APPLICATION = "backend.wsgi.application"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -116,6 +124,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:8081",
     "http://localhost:3000",
+    "https://localhost:8000",
+    "https://127.0.0.1:8000",
+    "https://0.0.0.0:8000",
+    "https://172.19.0.11:8000"
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -244,3 +256,67 @@ LOGGING = {
         },
     },
 }
+
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+# AllAuth settings
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_LOGOUT_ON_GET = True
+
+# VK OAuth settings
+SOCIALACCOUNT_PROVIDERS = {
+    'vk': {
+        'APP': {
+            'client_id': os.getenv('VK_CLIENT_ID', '53561168'),
+            'secret': os.getenv('VK_SECRET_KEY', 'OAS9DZWdLqoe1a8aiHXW'),
+            'key': os.getenv('VK_API_KEY', '2203014a2203014a2203014a462132461a222032203014a4a20708f43ed6761ce61f616')
+        },
+        'SCOPE': ['email'],
+        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'METHOD': 'oauth2',
+    }
+}
+
+# Google OAuth settings
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
+            'secret': os.getenv('GOOGLE_SECRET_KEY', ''),
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+
+# Настройки для тестирования OAuth
+#if DEBUG:
+#    SOCIALACCOUNT_PROVIDERS['vk']['APP']['client_id'] = os.getenv('VK_CLIENT_ID', '')
+#    SOCIALACCOUNT_PROVIDERS['vk']['APP']['secret'] = os.getenv('VK_SECRET_KEY', '')
+#    SOCIALACCOUNT_PROVIDERS['vk']['APP']['key'] = os.getenv('VK_API_KEY', '')
+
+# Настройки для OAuth
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_STORE_TOKENS = True
+
+# Настройки для callback URL
+CALLBACK_URL = os.getenv('CALLBACK_URL', 'https://localhost:8000/accounts/google/login/callback/')
