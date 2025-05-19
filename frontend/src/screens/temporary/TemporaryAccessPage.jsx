@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {Container, Spinner, Alert, Navbar} from "react-bootstrap";
 import API from "../../api";
-import NavigationBar from "../../components/NavigationBar";
 import RecommendedPlacesList from "../poll/components/RecommendedPlacesList";
 import "../../styles/styles.css";
 import { load2GIS } from "../../utils/load2gis";
@@ -33,7 +32,7 @@ const TemporaryAccessPage = () => {
         };
 
         fetchData();
-    }, [token]);
+    }, []);
 
     useEffect(() => {
         if (!pollData?.results?.average_point || !pollData?.results?.radius) return;
