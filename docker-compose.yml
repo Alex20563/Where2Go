@@ -34,7 +34,7 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_DB: where2go
+      POSTGRES_DB: where2go_db
       POSTGRES_USER: test_user
       POSTGRES_PASSWORD: 123
     ports:

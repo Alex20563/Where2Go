@@ -13,6 +13,7 @@ import AllPolls from "./screens/poll/AllPools";
 import PrivateRoute from "./components/PrivateRoute";
 import PollPage from "./screens/poll/PollPage";
 import PollResultsPage from "./screens/poll/PollResultsPage";
+import OAuthSuccess from "./screens/auth/pages/login/OAuthSuccess";
 
 function App() {
     return (
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/register" element={<Register/>}/>
                 <Route path="/2fa" element={<TwoFactorAuth/>}/>
+                <Route path="/oauth-success" element={<OAuthSuccess/>} />
                 {/* Защита от перехода на страницы без авторизации */}
                 <Route path="/profile" element={<PrivateRoute><Profile/></PrivateRoute>}/>
                 <Route path="/create-group" element={<PrivateRoute><CreateGroup/></PrivateRoute>}/>

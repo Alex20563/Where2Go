@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -268,7 +271,7 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_LOGOUT_ON_GET = True
 
-# VK OAuth settings
+# OAuth settings
 SOCIALACCOUNT_PROVIDERS = {
     "vk": {
         "APP": {
@@ -279,11 +282,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["email"],
         "AUTH_PARAMS": {"auth_type": "reauthenticate"},
         "METHOD": "oauth2",
-    }
-}
-
-# Google OAuth settings
-SOCIALACCOUNT_PROVIDERS = {
+    },
     "google": {
         "APP": {
             "client_id": os.getenv("GOOGLE_CLIENT_ID", ""),

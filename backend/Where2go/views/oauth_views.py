@@ -13,6 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.http import HttpResponseRedirect
 
 logger = logging.getLogger("django.security")
 
@@ -217,7 +218,9 @@ def social_auth_callback(request):
             f"Returning response JSON: {json.dumps(response_data, indent=2, ensure_ascii=False)}"
         )
         print("=== End of social_auth_callback ===\n")
-        return Response(response_data, status=status.HTTP_200_OK)
+        #return Response(response_data, status=status.HTTP_200_OK)
+        frontend_url = f"https://localhost:3000/oauth-success?token={token.key}"
+        return HttpResponseRedirect(frontend_url)
 
     except Exception as e:
         print(f"Error in social_auth_callback: {str(e)}")
