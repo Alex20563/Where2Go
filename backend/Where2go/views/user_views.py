@@ -18,9 +18,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..management.captcha import verify_captcha
-from ..models import CustomUser, TemporaryAccessLink, UserSession
+from ..models import CustomUser, TemporaryAccessLink, UserSession, Poll
 from ..serializers import UserDetailSerializer, UserListSerializer, UserSerializer
-
+from ..management.places import get_places_with_meta
 
 class UserCreate(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -347,16 +347,20 @@ class TemporaryAccessLinkView(APIView):
         expires_at = timezone.now() + timedelta(hours=duration_hours)
 
         # Создание временной ссылки
-        # access_link = TemporaryAccessLink.objects.create(
-        #     user=request.user,
-        #     token=token,
-        #     expires_at=expires_at,
-        #     content_type=content_type,
-        #     content_id=content_id,
-        # )
+        access_link = TemporaryAccessLink.objects.create(
+            user=request.user,
+            token=token,
+            expires_at=expires_at,
+            content_type=content_type,
+            content_id=content_id,
+        )
 
         return Response(
-            {"token": token, "expires_at": expires_at, "link": f"/api/access/{token}"},
+            {
+            "token": access_link.token,
+            "expires_at": access_link.expires_at,
+            "link": f"/api/access/{access_link.token}"
+            },
             status=status.HTTP_201_CREATED,
         )
 
@@ -411,6 +415,52 @@ class AccessLinkView(APIView):
                 return Response(
                     {"error": "Срок действия ссылки истек"}, status=status.HTTP_410_GONE
                 )
+
+            if access_link.content_type == "poll_results":
+                try:
+                    poll = Poll.objects.get(id=access_link.content_id)
+                    results_data = poll.get_results()
+                    if not results_data or not results_data.get("total_votes"):
+                        return Response(
+                            {
+                                "poll_title": poll.question,
+                                "results": {
+                                    "total_votes": 0,
+                                    "average_point": {
+                                        "lat": 0,
+                                        "lon": 0,
+                                    },
+                                    "most_popular_categories": [],
+                                },
+                                "recommended_places": [],
+                                "owner": access_link.user.username,
+                            }
+                        )
+
+                    categories = results_data["most_popular_categories"]
+                    lat = results_data["average_point"]["lat"]
+                    lon = results_data["average_point"]["lon"]
+
+                    recommended_places = []
+                    for category in categories:
+                        data = get_places_with_meta(
+                            base_lat=lat,
+                            base_lon=lon,
+                            category=category,
+                            radius=1000,
+                            min_rating=4.0,
+                        )
+                        recommended_places.append(data)
+
+                    return Response({
+                        "poll_title": poll.question,
+                        "results": {**results_data, "radius": 1000, "min_rating": 4.0},
+                        "recommended_places": recommended_places,
+                        "owner": access_link.user.username,
+                    })
+                except Poll.DoesNotExist:
+                    return Response({"error": "Опрос не найден"}, status=404)
+
 
             # Здесь можно добавить логику для получения контента
             # в зависимости от content_type и content_id

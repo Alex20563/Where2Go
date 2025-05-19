@@ -168,9 +168,11 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+
     # Обслуживание Vue.js приложения
     re_path(r"^$", TemplateView.as_view(template_name="index.html")),
     re_path(r"^(?!api/).*$", TemplateView.as_view(template_name="index.html")),
+
     path("api/admin/users/", UserListView.as_view(), name="admin-user-list"),
     path(
         "api/admin/users/<int:user_id>/",
