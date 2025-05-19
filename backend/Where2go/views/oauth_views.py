@@ -218,7 +218,6 @@ def social_auth_callback(request):
             f"Returning response JSON: {json.dumps(response_data, indent=2, ensure_ascii=False)}"
         )
         print("=== End of social_auth_callback ===\n")
-        #return Response(response_data, status=status.HTTP_200_OK)
         frontend_url = f"https://localhost:3000/oauth-success?token={token.key}"
         return HttpResponseRedirect(frontend_url)
 

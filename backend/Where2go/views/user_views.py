@@ -1,7 +1,6 @@
 import random
 import secrets
 from datetime import timedelta
-
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.mail import send_mail
@@ -21,6 +20,7 @@ from ..management.captcha import verify_captcha
 from ..models import CustomUser, TemporaryAccessLink, UserSession, Poll
 from ..serializers import UserDetailSerializer, UserListSerializer, UserSerializer
 from ..management.places import get_places_with_meta
+
 
 class UserCreate(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -357,9 +357,9 @@ class TemporaryAccessLinkView(APIView):
 
         return Response(
             {
-            "token": access_link.token,
-            "expires_at": access_link.expires_at,
-            "link": f"/api/access/{access_link.token}"
+                "token": access_link.token,
+                "expires_at": access_link.expires_at,
+                "link": f"/api/access/{access_link.token}"
             },
             status=status.HTTP_201_CREATED,
         )
@@ -460,10 +460,6 @@ class AccessLinkView(APIView):
                     })
                 except Poll.DoesNotExist:
                     return Response({"error": "Опрос не найден"}, status=404)
-
-
-            # Здесь можно добавить логику для получения контента
-            # в зависимости от content_type и content_id
 
             return Response(
                 {
